@@ -3045,6 +3045,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 233e042766ed29943aefed533f08a822, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RankingOnline
+  urlRegistrarPartida: https://rtngwptcrecttvbluhgv.supabase.co/functions/v1/registrar-partida
+  urlMostrarRanking: https://rtngwptcrecttvbluhgv.supabase.co/functions/v1/mostrar-ranking
+  supabasePublishableKey: sb_publishable_TeRx0S1eC4Dv99fINsfK3A_4e756Lm8
 --- !u!114 &831516970
 MonoBehaviour:
   m_ObjectHideFlags: 0
