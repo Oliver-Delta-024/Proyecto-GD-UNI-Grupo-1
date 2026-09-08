@@ -5,6 +5,8 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Unity.VisualScripting;
 using System.Collections;
+using System.Diagnostics;
+using Debug = UnityEngine.Debug;
 
 public class Nivel2 : MonoBehaviour
 {
@@ -213,15 +215,63 @@ public class Nivel2 : MonoBehaviour
         BotonMenu.SetActive(true);
     }
 
-    public void TerminarPartida()
+    public async void TerminarPartida()
     {
         BotonMenu.SetActive(false);
         Menupanel.SetActive(true);
 
-        //Mandar datos de partida
-        PlayerPrefs.SetString("UltimoNombre", PlayerPrefs.GetString("NombreJugador"));
+        //========================================== 
+        // GUARDAR RESULTADO PARA EL RANKING LOCAL 
+        //==========================================
+
+        string nombreJugador = PlayerPrefs.GetString("NombreJugador");
+        int tiempoFinal = Mathf.FloorToInt(tiempo);
+        PlayerPrefs.SetString("UltimoNombre", nombreJugador);
         PlayerPrefs.SetFloat("UltimoTiempo", tiempo);
         PlayerPrefs.SetInt("UltimoNivel", nivelActual);
+
+        //========================================== 
+        // REGISTRAR EN RANKING MUNDIAL 
+        //==========================================
+        if (RankingOnline.Instancia != null)
+        {
+            Debug.Log("DevLog Ranking -> Iniciando registro mundial. " +
+                "Nivel: Nivel " + nivelActual +
+                " | Tiempo: " + tiempoFinal +
+                " segundos");
+
+            Stopwatch cronometro = Stopwatch.StartNew();
+
+            bool registrado =
+                await RankingOnline.Instancia.RegistrarPartida(
+                    nombreJugador,
+                    tiempoFinal,
+                    "Nivel " + nivelActual);
+
+            cronometro.Stop();
+
+            Debug.Log("DevLog Ranking -> Registro mundial terminado. " +
+                "Tiempo: " +
+                cronometro.ElapsedMilliseconds +
+                " ms");
+
+            if (registrado)
+            {
+                Debug.Log("DevLog Ranking -> Registro mundial EXITOSO.");
+            }
+            else
+            {
+                Debug.LogWarning("DevLog Ranking -> Registro mundial FALLIDO. " + "El ranking local se mantiene.");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("DevLog Ranking -> RankingOnline no encontrado. " + "Solo se guardará el ranking local.");
+        }
+
+        //========================================== 
+        // CONTINUAR CON EL FLUJO ORIGINAL 
+        //==========================================
 
         PlayerPrefs.SetInt("AbrirMenuNiveles", 1);
 
@@ -369,23 +419,57 @@ public class Nivel2 : MonoBehaviour
 
     //Pantalla Game Over
 
-    public void ReintentarNivel()
+    public async void ReintentarNivel()
     {
         //------------------------------------------
         // Enviar resultado al Ranking
         //------------------------------------------
 
-        PlayerPrefs.SetString(
-            "UltimoNombre",
-            PlayerPrefs.GetString("NombreJugador"));
+        string nombreJugador = PlayerPrefs.GetString("NombreJugador");
+        int tiempoFinal = Mathf.FloorToInt(tiempo);
+        PlayerPrefs.SetString("UltimoNombre", nombreJugador);
+        PlayerPrefs.SetFloat("UltimoTiempo", tiempo);
+        PlayerPrefs.SetInt("UltimoNivel", nivelActual);
 
-        PlayerPrefs.SetFloat(
-            "UltimoTiempo",
-            tiempo);
+        //========================================== 
+        // Registrar en ranking mundial
+        //==========================================
 
-        PlayerPrefs.SetInt(
-            "UltimoNivel",
-            nivelActual);
+        if (RankingOnline.Instancia != null)
+        {
+            Debug.Log("DevLog Ranking -> Iniciando registro mundial. " +
+                "Nivel: Nivel " + nivelActual +
+                " | Tiempo: " + tiempoFinal +
+                " segundos");
+
+            Stopwatch cronometro = Stopwatch.StartNew();
+
+            bool registrado =
+                await RankingOnline.Instancia.RegistrarPartida(
+                    nombreJugador,
+                    tiempoFinal,
+                    "Nivel " + nivelActual);
+
+            cronometro.Stop();
+
+            Debug.Log("DevLog Ranking -> Registro mundial terminado. " +
+                "Tiempo: " +
+                cronometro.ElapsedMilliseconds +
+                " ms");
+
+            if (registrado)
+            {
+                Debug.Log("DevLog Ranking -> Registro mundial EXITOSO.");
+            }
+            else
+            {
+                Debug.LogWarning("DevLog Ranking -> Registro mundial FALLIDO. " + "El ranking local se mantiene.");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("DevLog Ranking -> RankingOnline no encontrado. " + "Solo se guardará el ranking local.");
+        }
 
         //------------------------------------------
         // Eliminar partida guardada
@@ -394,15 +478,15 @@ public class Nivel2 : MonoBehaviour
         PlayerPrefs.DeleteKey("PartidaGuardada" + nivelActual);
         PlayerPrefs.DeleteKey("TiempoGuardado" + nivelActual);
 
-        PlayerPrefs.DeleteKey("Nivel1_CantidadDiscos");
+        PlayerPrefs.DeleteKey("Nivel2_CantidadDiscos");
 
         for (int i = 0; i < 200; i++)
         {
-            PlayerPrefs.DeleteKey("Nivel1_Tipo_" + i);
-            PlayerPrefs.DeleteKey("Nivel1_PosX_" + i);
-            PlayerPrefs.DeleteKey("Nivel1_PosY_" + i);
-            PlayerPrefs.DeleteKey("Nivel1_DirX_" + i);
-            PlayerPrefs.DeleteKey("Nivel1_DirY_" + i);
+            PlayerPrefs.DeleteKey("Nivel2_Tipo_" + i);
+            PlayerPrefs.DeleteKey("Nivel2_PosX_" + i);
+            PlayerPrefs.DeleteKey("Nivel2_PosY_" + i);
+            PlayerPrefs.DeleteKey("Nivel2_DirX_" + i);
+            PlayerPrefs.DeleteKey("Nivel2_DirY_" + i);
         }
 
         PlayerPrefs.Save();
@@ -420,23 +504,57 @@ public class Nivel2 : MonoBehaviour
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
-    public void VolverMenuGameOver()
+    public async void VolverMenuGameOver()
     {
         //------------------------------------------
         // Enviar resultado al Ranking
         //------------------------------------------
 
-        PlayerPrefs.SetString(
-            "UltimoNombre",
-            PlayerPrefs.GetString("NombreJugador"));
+        string nombreJugador = PlayerPrefs.GetString("NombreJugador");
+        int tiempoFinal = Mathf.FloorToInt(tiempo);
+        PlayerPrefs.SetString("UltimoNombre", nombreJugador);
+        PlayerPrefs.SetFloat("UltimoTiempo", tiempo);
+        PlayerPrefs.SetInt("UltimoNivel", nivelActual);
 
-        PlayerPrefs.SetFloat(
-            "UltimoTiempo",
-            tiempo);
+        //========================================== 
+        // Registrar en ranking mundial
+        //==========================================
 
-        PlayerPrefs.SetInt(
-            "UltimoNivel",
-            nivelActual);
+        if (RankingOnline.Instancia != null)
+        {
+            Debug.Log("DevLog Ranking -> Iniciando registro mundial. " +
+                "Nivel: Nivel " + nivelActual +
+                " | Tiempo: " + tiempoFinal +
+                " segundos");
+
+            Stopwatch cronometro = Stopwatch.StartNew();
+
+            bool registrado =
+                await RankingOnline.Instancia.RegistrarPartida(
+                    nombreJugador,
+                    tiempoFinal,
+                    "Nivel " + nivelActual);
+
+            cronometro.Stop();
+
+            Debug.Log("DevLog Ranking -> Registro mundial terminado. " +
+                "Tiempo: " +
+                cronometro.ElapsedMilliseconds +
+                " ms");
+
+            if (registrado)
+            {
+                Debug.Log("DevLog Ranking -> Registro mundial EXITOSO.");
+            }
+            else
+            {
+                Debug.LogWarning("DevLog Ranking -> Registro mundial FALLIDO. " + "El ranking local se mantiene.");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("DevLog Ranking -> RankingOnline no encontrado. " + "Solo se guardará el ranking local.");
+        }
 
         //------------------------------------------
         // Eliminar partida guardada
@@ -445,15 +563,15 @@ public class Nivel2 : MonoBehaviour
         PlayerPrefs.DeleteKey("PartidaGuardada" + nivelActual);
         PlayerPrefs.DeleteKey("TiempoGuardado" + nivelActual);
 
-        PlayerPrefs.DeleteKey("Nivel1_CantidadDiscos");
+        PlayerPrefs.DeleteKey("Nivel2_CantidadDiscos");
 
         for (int i = 0; i < 200; i++)
         {
-            PlayerPrefs.DeleteKey("Nivel1_Tipo_" + i);
-            PlayerPrefs.DeleteKey("Nivel1_PosX_" + i);
-            PlayerPrefs.DeleteKey("Nivel1_PosY_" + i);
-            PlayerPrefs.DeleteKey("Nivel1_DirX_" + i);
-            PlayerPrefs.DeleteKey("Nivel1_DirY_" + i);
+            PlayerPrefs.DeleteKey("Nivel2_Tipo_" + i);
+            PlayerPrefs.DeleteKey("Nivel2_PosX_" + i);
+            PlayerPrefs.DeleteKey("Nivel2_PosY_" + i);
+            PlayerPrefs.DeleteKey("Nivel2_DirX_" + i);
+            PlayerPrefs.DeleteKey("Nivel2_DirY_" + i);
         }
 
         //------------------------------------------

@@ -437,4 +437,11 @@ public class MainMenu : MonoBehaviour
         }
     }
 
+    //
+
+    public void BotónRankingOnline()
+    {
+        SceneManager.LoadScene("RankingMundial");
+    }
+
 }
