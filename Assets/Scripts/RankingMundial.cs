@@ -177,6 +177,9 @@ public class RankingMundial : MonoBehaviour
     // Tiempo mínimo seleccionado.
     private int tiempoMinimoSegundos = 0;
 
+    // Bloqueo de anticlicks
+    private bool actualizacionEnCurso = false;
+
     //==================================================
     // INICIO
     //==================================================
@@ -258,6 +261,16 @@ public class RankingMundial : MonoBehaviour
 
     public async void ActualizarRanking()
     {
+        if (actualizacionEnCurso)
+        {
+            Debug.LogWarning(
+                "RankingMundial -> Actualización ya en curso. Click ignorado."
+            );
+            return;
+        }
+
+        actualizacionEnCurso = true;
+
         if (RankingOnline.Instancia == null)
         {
             Debug.LogWarning(
@@ -370,6 +383,8 @@ public class RankingMundial : MonoBehaviour
                 + error.Message
             );
         }
+
+        actualizacionEnCurso = false;
     }
 
 

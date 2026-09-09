@@ -56,6 +56,8 @@ public class Nivel1 : MonoBehaviour
     public TextMeshProUGUI textoTiempoFinal;
     public TextMeshProUGUI textoNivelFinal;
 
+    private bool registroEnCurso = false;
+
     //Metodo para Contar el Tiempo
     void Start() 
     {
@@ -217,6 +219,22 @@ public class Nivel1 : MonoBehaviour
 
     public async void TerminarPartida()
     {
+        // ========================================== 
+        // PREVENIR MULTI-CLICK 
+        // ==========================================
+        
+        if (registroEnCurso) 
+        { 
+            Debug.LogWarning( "Nivel1 -> Operación de ranking ya en curso. Click ignorado." );
+            return; 
+        } 
+        
+        registroEnCurso = true;
+
+        // ========================================== 
+        // BLOQUEAR FLUJO DEL MENÚ 
+        // ==========================================
+
         BotonMenu.SetActive(false);
         Menupanel.SetActive(true);
 
@@ -253,7 +271,8 @@ public class Nivel1 : MonoBehaviour
             Debug.Log( "DevLog Ranking -> Registro mundial terminado. " +
                 "Tiempo: " +
                 cronometro.ElapsedMilliseconds +
-                " ms" );
+                " ms" 
+            );
             
             if (registrado) 
             { 
@@ -421,6 +440,18 @@ public class Nivel1 : MonoBehaviour
 
     public async void ReintentarNivel()
     {
+        // ========================================== 
+        // Prevenir multi-click
+        // ==========================================
+
+        if (registroEnCurso)
+        {
+            Debug.LogWarning("Nivel1 -> Operación de ranking ya en curso. Click ignorado.");
+            return;
+        }
+
+        registroEnCurso = true;
+
         //------------------------------------------
         // Enviar resultado al Ranking
         //------------------------------------------
@@ -506,6 +537,18 @@ public class Nivel1 : MonoBehaviour
 
     public async void VolverMenuGameOver()
     {
+        // ========================================== 
+        // Prevenir multi-click
+        // ==========================================
+
+        if (registroEnCurso)
+        {
+            Debug.LogWarning("Nivel1 -> Operación de ranking ya en curso. Click ignorado.");
+            return;
+        }
+
+        registroEnCurso = true;
+
         //------------------------------------------
         // Enviar resultado al Ranking
         //------------------------------------------

@@ -111,6 +111,8 @@ public class NivelPersonalizado : MonoBehaviour
         //EstablecerConfiguracionEventos();
     }
 
+    private bool registroEnCurso = false;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -435,7 +437,21 @@ public class NivelPersonalizado : MonoBehaviour
 
     public async void TerminarPartida()
     {
-        // CERRAR MENU
+        // ========================================== 
+        // PREVENIR MULTI-CLICK 
+        // ==========================================
+
+        if (registroEnCurso)
+        {
+            Debug.LogWarning("Nivel1 -> Operación de ranking ya en curso. Click ignorado.");
+            return;
+        }
+
+        registroEnCurso = true;
+
+        // ========================================== 
+        // BLOQUEAR FLUJO DEL MENÚ 
+        // ==========================================
 
         BotonMenu.SetActive(false);
         Menupanel.SetActive(true);
@@ -723,6 +739,18 @@ public class NivelPersonalizado : MonoBehaviour
 
     public async void ReintentarNivel()
     {
+        // ========================================== 
+        // Prevenir multi-click
+        // ==========================================
+
+        if (registroEnCurso)
+        {
+            Debug.LogWarning("Nivel1 -> Operación de ranking ya en curso. Click ignorado.");
+            return;
+        }
+
+        registroEnCurso = true;
+
         //------------------------------------------
         // Enviar resultado al Ranking
         //------------------------------------------
@@ -811,6 +839,18 @@ public class NivelPersonalizado : MonoBehaviour
 
     public async void VolverMenuGameOver()
     {
+        // ========================================== 
+        // Prevenir multi-click
+        // ==========================================
+
+        if (registroEnCurso)
+        {
+            Debug.LogWarning("Nivel1 -> Operación de ranking ya en curso. Click ignorado.");
+            return;
+        }
+
+        registroEnCurso = true;
+
         //------------------------------------------
         // Enviar resultado al Ranking
         //------------------------------------------
