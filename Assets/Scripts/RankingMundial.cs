@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Audio;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -20,6 +21,9 @@ public class RankingMundial : MonoBehaviour
 
     // Cantidad de resultados mostrados por página.
     private const int ResultadosPorPagina = 5;
+
+    [SerializeField]
+    private AudioMixer masterMixer;
 
 
     //==================================================
@@ -252,6 +256,15 @@ public class RankingMundial : MonoBehaviour
         // ---------------------------------------------
 
         ActualizarRanking();
+
+        float volumenGuardado = PlayerPrefs.GetFloat("VolumenDelJuego", 1f);
+
+        float decibelios = Mathf.Log10(volumenGuardado) * 20;
+
+        masterMixer.SetFloat(
+            "MasterVolume",
+            decibelios
+        );
     }
 
 
