@@ -55,11 +55,15 @@ public class GeneradorNivelPersonalizado : GeneradorBase
 
     public void ConfigurarProteccion(bool activa)
     {
-        BoxCollider2D collider = GetComponent<BoxCollider2D>();
+        BoxCollider2D boxCollider = GetComponent<BoxCollider2D>();
+        CircleCollider2D circleCollider = GetComponent<CircleCollider2D>();
         SpriteRenderer sprite = GetComponent<SpriteRenderer>();
 
-        if (collider != null)
-            collider.enabled = activa;
+        if (boxCollider != null)
+            boxCollider.enabled = activa;
+
+        if (circleCollider != null)
+            circleCollider.enabled = activa;
 
         if (sprite != null)
             sprite.enabled = activa;
