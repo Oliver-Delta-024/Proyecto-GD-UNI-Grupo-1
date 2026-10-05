@@ -60,7 +60,7 @@ public class MainMenu : MonoBehaviour
         float volumenGuardado = PlayerPrefs.GetFloat("VolumenDelJuego", 1f);
 
         //Movemos el slider al volumen guardado
-        if(soundSlider != null)
+        if (soundSlider != null)
         {
             soundSlider.value = volumenGuardado;
         }
@@ -70,10 +70,10 @@ public class MainMenu : MonoBehaviour
 
         //Pantalla Completa Inicial
         int pantallaGuardada = PlayerPrefs.GetInt("PantallaGuardada", 0);
-        
+
         bool esCompleta = (pantallaGuardada == 1);
 
-        if (pantallaCompletaToggle != null) 
+        if (pantallaCompletaToggle != null)
         {
             pantallaCompletaToggle.isOn = esCompleta;
         }
@@ -275,7 +275,7 @@ public class MainMenu : MonoBehaviour
     }
 
     //Botones Pantalla Menu
-    public void AbrirPanelOpciones() 
+    public void AbrirPanelOpciones()
     {
         mainMenu.SetActive(false);
         opcionesMenu.SetActive(true);
@@ -294,7 +294,7 @@ public class MainMenu : MonoBehaviour
             mainMenu.SetActive(false);
             Menuniveles.SetActive(true);
         }
-        else 
+        else
         {
             panelSinNombre.SetActive(true);
         }
@@ -321,7 +321,7 @@ public class MainMenu : MonoBehaviour
         }
     }
 
-    public void QuitGame() 
+    public void QuitGame()
     {
         Application.Quit();
     }
@@ -404,7 +404,7 @@ public class MainMenu : MonoBehaviour
         Menuniveles.SetActive(false);
     }
 
-    public void OpenNivelOne() 
+    public void OpenNivelOne()
     {
         PlayerPrefs.SetInt("ContinuarPartida", 1);
         SceneManager.LoadScene("Nivel1");

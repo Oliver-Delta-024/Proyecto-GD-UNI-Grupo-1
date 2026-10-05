@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 6887579325974573469}
   - component: {fileID: 4841280856179117681}
   - component: {fileID: 3014429294071971526}
+  - component: {fileID: 675644747893541768}
   m_Layer: 6
   m_Name: DiscoVeloz
   m_TagString: Untagged
@@ -30,8 +31,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.41476572, y: 0.41476572, z: 0.41476572}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.40000004, y: 0.40000004, z: 0.40000004}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 8208812022395712871}
   m_Father: {fileID: 0}
@@ -121,7 +122,7 @@ Rigidbody2D:
   m_Interpolate: 1
   m_SleepingMode: 0
   m_CollisionDetection: 1
-  m_Constraints: 0
+  m_Constraints: 4
 --- !u!58 &4841280856179117681
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -180,6 +181,28 @@ MonoBehaviour:
   radioExplosion: 1.5
   duracionVeneno: 3
   multiplicadorVeneno: 0.5
+--- !u!95 &675644747893541768
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4057490941099617844}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: a38d1f1bb6cd64d4d92171968a573250, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &4083738129756776098
 GameObject:
   m_ObjectHideFlags: 0
@@ -248,7 +271,7 @@ CircleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_Radius: 0.7
+  m_Radius: 0.6
 --- !u!114 &980874690676566412
 MonoBehaviour:
   m_ObjectHideFlags: 0
