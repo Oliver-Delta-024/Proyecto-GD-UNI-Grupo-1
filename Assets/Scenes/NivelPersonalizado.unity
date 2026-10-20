@@ -2722,15 +2722,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4aa373076d64ba444aa6768a5d6c1a42, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GeneradorNivelPersonalizado
+  tiempoMinimo: 5
+  tiempoMaximo: 6
+  radioGeneracion: 0.5
+  discosActivos: []
   discoNormalPrefab: {fileID: 50171060979589905, guid: d2eb5da65f2df40408825a65dd30e4e8, type: 3}
   discoRapidoPrefab: {fileID: 4057490941099617844, guid: 9fb96a94781f82343b4c8b6a1bc9ab56, type: 3}
   discoPesadoPrefab: {fileID: 814608621932809048, guid: 93a19850cfbb14744a6c4b2b49fe4e43, type: 3}
   discoVenenosoPrefab: {fileID: 8260086917508972029, guid: 9d3c222702f7c63469e5df895229d7de, type: 3}
   discoExplosivoPrefab: {fileID: 3471784417505923023, guid: 3209d898a5fcd9140af28aaea1debcc3, type: 3}
-  tiempoMinimo: 5
-  tiempoMaximo: 6
-  radioGeneracion: 0.5
-  discosActivos: []
   nivel: {fileID: 1692637116}
 --- !u!61 &759576674
 BoxCollider2D:
@@ -2825,7 +2825,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 30
+  m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Sprite: {fileID: 1560955296505957673, guid: 1eb15766851f6884e8911b05694d4c42, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -3232,15 +3232,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4aa373076d64ba444aa6768a5d6c1a42, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GeneradorNivelPersonalizado
+  tiempoMinimo: 5
+  tiempoMaximo: 6
+  radioGeneracion: 0.5
+  discosActivos: []
   discoNormalPrefab: {fileID: 50171060979589905, guid: d2eb5da65f2df40408825a65dd30e4e8, type: 3}
   discoRapidoPrefab: {fileID: 4057490941099617844, guid: 9fb96a94781f82343b4c8b6a1bc9ab56, type: 3}
   discoPesadoPrefab: {fileID: 814608621932809048, guid: 93a19850cfbb14744a6c4b2b49fe4e43, type: 3}
   discoVenenosoPrefab: {fileID: 8260086917508972029, guid: 9d3c222702f7c63469e5df895229d7de, type: 3}
   discoExplosivoPrefab: {fileID: 3471784417505923023, guid: 3209d898a5fcd9140af28aaea1debcc3, type: 3}
-  tiempoMinimo: 5
-  tiempoMaximo: 6
-  radioGeneracion: 0.5
-  discosActivos: []
   nivel: {fileID: 1692637116}
 --- !u!61 &885793097
 BoxCollider2D:
@@ -3335,7 +3335,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 30
+  m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Sprite: {fileID: 1560955296505957673, guid: 1eb15766851f6884e8911b05694d4c42, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -4186,15 +4186,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4aa373076d64ba444aa6768a5d6c1a42, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GeneradorNivelPersonalizado
+  tiempoMinimo: 5
+  tiempoMaximo: 6
+  radioGeneracion: 0.5
+  discosActivos: []
   discoNormalPrefab: {fileID: 50171060979589905, guid: d2eb5da65f2df40408825a65dd30e4e8, type: 3}
   discoRapidoPrefab: {fileID: 4057490941099617844, guid: 9fb96a94781f82343b4c8b6a1bc9ab56, type: 3}
   discoPesadoPrefab: {fileID: 814608621932809048, guid: 93a19850cfbb14744a6c4b2b49fe4e43, type: 3}
   discoVenenosoPrefab: {fileID: 8260086917508972029, guid: 9d3c222702f7c63469e5df895229d7de, type: 3}
   discoExplosivoPrefab: {fileID: 3471784417505923023, guid: 3209d898a5fcd9140af28aaea1debcc3, type: 3}
-  tiempoMinimo: 5
-  tiempoMaximo: 6
-  radioGeneracion: 0.5
-  discosActivos: []
   nivel: {fileID: 1692637116}
 --- !u!61 &1086159864
 BoxCollider2D:
@@ -4289,7 +4289,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 30
+  m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Sprite: {fileID: 1560955296505957673, guid: 1eb15766851f6884e8911b05694d4c42, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -5485,15 +5485,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4aa373076d64ba444aa6768a5d6c1a42, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GeneradorNivelPersonalizado
+  tiempoMinimo: 5
+  tiempoMaximo: 6
+  radioGeneracion: 0.5
+  discosActivos: []
   discoNormalPrefab: {fileID: 50171060979589905, guid: d2eb5da65f2df40408825a65dd30e4e8, type: 3}
   discoRapidoPrefab: {fileID: 4057490941099617844, guid: 9fb96a94781f82343b4c8b6a1bc9ab56, type: 3}
   discoPesadoPrefab: {fileID: 814608621932809048, guid: 93a19850cfbb14744a6c4b2b49fe4e43, type: 3}
   discoVenenosoPrefab: {fileID: 8260086917508972029, guid: 9d3c222702f7c63469e5df895229d7de, type: 3}
   discoExplosivoPrefab: {fileID: 3471784417505923023, guid: 3209d898a5fcd9140af28aaea1debcc3, type: 3}
-  tiempoMinimo: 5
-  tiempoMaximo: 6
-  radioGeneracion: 0.5
-  discosActivos: []
   nivel: {fileID: 1692637116}
 --- !u!4 &1397780468
 Transform:
@@ -5504,7 +5504,7 @@ Transform:
   m_GameObject: {fileID: 1397780466}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1.5, y: 0.4, z: 0}
+  m_LocalPosition: {x: 1.48, y: 0.45, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5603,7 +5603,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 30
+  m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Sprite: {fileID: 1560955296505957673, guid: 1eb15766851f6884e8911b05694d4c42, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -6034,7 +6034,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -276.99997, y: -161}
+  m_AnchoredPosition: {x: -277, y: -161}
   m_SizeDelta: {x: 246, y: 142.982}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1473447044
@@ -7310,15 +7310,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4aa373076d64ba444aa6768a5d6c1a42, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GeneradorNivelPersonalizado
+  tiempoMinimo: 5
+  tiempoMaximo: 6
+  radioGeneracion: 0.5
+  discosActivos: []
   discoNormalPrefab: {fileID: 50171060979589905, guid: d2eb5da65f2df40408825a65dd30e4e8, type: 3}
   discoRapidoPrefab: {fileID: 4057490941099617844, guid: 9fb96a94781f82343b4c8b6a1bc9ab56, type: 3}
   discoPesadoPrefab: {fileID: 814608621932809048, guid: 93a19850cfbb14744a6c4b2b49fe4e43, type: 3}
   discoVenenosoPrefab: {fileID: 8260086917508972029, guid: 9d3c222702f7c63469e5df895229d7de, type: 3}
   discoExplosivoPrefab: {fileID: 3471784417505923023, guid: 3209d898a5fcd9140af28aaea1debcc3, type: 3}
-  tiempoMinimo: 5
-  tiempoMaximo: 6
-  radioGeneracion: 0.5
-  discosActivos: []
   nivel: {fileID: 1692637116}
 --- !u!61 &1661349284
 BoxCollider2D:
@@ -7413,7 +7413,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 30
+  m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Sprite: {fileID: 1560955296505957673, guid: 1eb15766851f6884e8911b05694d4c42, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -7513,7 +7513,7 @@ MonoBehaviour:
   m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 800, y: 600}
+  m_ReferenceResolution: {x: 750, y: 600}
   m_ScreenMatchMode: 0
   m_MatchWidthOrHeight: 0
   m_PhysicalUnit: 3

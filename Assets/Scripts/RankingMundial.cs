@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Audio;
@@ -10,17 +11,15 @@ public class RankingMundial : MonoBehaviour
 {
 
     //==================================================
-    // CONFIGURACIÓN
+    // CONFIGURACIï¿½N
     //==================================================
 
     [Header("Leaderboard")]
 
-    // Máximo de resultados que consultaremos.
-    [SerializeField]
-    private int maxResultados = 50;
-
-    // Cantidad de resultados mostrados por página.
+    // Cantidad de resultados mostrados por pï¿½gina.
     private const int ResultadosPorPagina = 5;
+    private const int MaxResultadosV1 = 50;
+    private const int MaxResultadosSnapshotV2 = 50;
 
     [SerializeField]
     private AudioMixer masterMixer;
@@ -48,31 +47,31 @@ public class RankingMundial : MonoBehaviour
     [SerializeField]
     private TMP_InputField inputSegundos;
 
-    // Aviso cuando los segundos son inválidos.
+    // Aviso cuando los segundos son invï¿½lidos.
     [SerializeField]
     private GameObject avisoTiempoInvalido;
 
 
     //==================================================
-    // BOTÓN ACTUALIZAR
+    // BOTï¿½N ACTUALIZAR
     //==================================================
 
     [Header("Botones")]
 
-    // Botón que aplica los filtros sobre los datos actuales.
+    // Botï¿½n que aplica los filtros sobre los datos actuales.
     [SerializeField]
     private Button botonFiltrar;
 
-    // Botón que vuelve a consultar Supabase.
+    // Botï¿½n que vuelve a consultar Supabase.
     [SerializeField]
     private Button botonActualizar;
 
 
     //==================================================
-    // NAVEGACIÓN
+    // NAVEGACIï¿½N
     //==================================================
 
-    [Header("Navegación")]
+    [Header("Navegaciï¿½n")]
 
     [SerializeField]
     private Button botonAnterior;
@@ -168,18 +167,20 @@ public class RankingMundial : MonoBehaviour
     //==================================================
 
     // Datos recibidos desde Supabase.
+
+    // Datos despuï¿½s de aplicar filtros.
+
+    // Pï¿½gina actual.
+    private int paginaActual = 0;
+    private int cantidadPaginas = 0;
     private List<RankingOnline.ResultadoRanking> resultados =
         new List<RankingOnline.ResultadoRanking>();
-
-    // Datos después de aplicar filtros.
     private List<RankingOnline.ResultadoRanking> resultadosFiltrados =
         new List<RankingOnline.ResultadoRanking>();
+    private List<RankingOnline.ResultadoRanking> snapshotV2 =
+        new List<RankingOnline.ResultadoRanking>();
 
-    // Página actual.
-    private int paginaActual = 0;
-
-    // Tiempo mínimo seleccionado.
-    private int tiempoMinimoSegundos = 0;
+    // Tiempo mï¿½nimo seleccionado.
 
     // Bloqueo de anticlicks
     private bool actualizacionEnCurso = false;
@@ -210,7 +211,7 @@ public class RankingMundial : MonoBehaviour
         }
 
         // ---------------------------------------------
-        // BOTÓN FILTRAR
+        // BOTï¿½N FILTRAR
         // ---------------------------------------------
 
         if (botonFiltrar != null)
@@ -222,7 +223,7 @@ public class RankingMundial : MonoBehaviour
 
 
         // ---------------------------------------------
-        // BOTÓN ACTUALIZAR
+        // BOTï¿½N ACTUALIZAR
         // ---------------------------------------------
 
         if (botonActualizar != null)
@@ -233,7 +234,7 @@ public class RankingMundial : MonoBehaviour
         }
 
         // ---------------------------------------------
-        // NAVEGACIÓN
+        // NAVEGACIï¿½N
         // ---------------------------------------------
 
         if (botonAnterior != null)
@@ -274,240 +275,31 @@ public class RankingMundial : MonoBehaviour
 
     public async void ActualizarRanking()
     {
-        if (actualizacionEnCurso)
-        {
-            Debug.LogWarning(
-                "RankingMundial -> Actualización ya en curso. Click ignorado."
-            );
-            return;
-        }
-
-        actualizacionEnCurso = true;
-
-        if (RankingOnline.Instancia == null)
-        {
-            Debug.LogWarning(
-                "RankingMundial -> RankingOnline no encontrado."
-            );
-
-            return;
-        }
-
-        if (!RankingOnline.Instancia.Disponible)
-        {
-            Debug.LogWarning(
-                "RankingMundial -> RankingOnline todavía no está disponible."
-            );
-
-            return;
-        }
-
-
-        // ---------------------------------------------
-        // VALIDAR FILTRO DE TIEMPO
-        // ---------------------------------------------
-
-        if (!ValidarFiltroTiempo())
-        {
-            return;
-        }
-
-
-        // ---------------------------------------------
-        // GUARDAR FILTRO ACTUAL
-        // ---------------------------------------------
-
-        tiempoMinimoSegundos =
-            ObtenerTiempoMinimo();
-
-
-        Debug.Log(
-            "RankingMundial -> Actualizando datos desde Supabase..."
-        );
-
-
-        try
-        {
-            RankingOnline.RespuestaRanking respuesta =
-                await RankingOnline.Instancia.ObtenerRanking(
-                    "",
-                    0,
-                    1,
-                    maxResultados
-                );
-
-
-            if (respuesta == null)
-            {
-                Debug.LogError(
-                    "RankingMundial -> No se pudo obtener el ranking."
-                );
-
-                return;
-            }
-
-
-            // -----------------------------------------
-            // GUARDAR RESULTADOS
-            // -----------------------------------------
-
-            resultados =
-                new List<RankingOnline.ResultadoRanking>(
-                    respuesta.resultados ??
-                    new RankingOnline.ResultadoRanking[0]
-                );
-
-
-            Debug.Log(
-                "RankingMundial -> Datos recibidos: "
-                + resultados.Count
-            );
-
-
-            // -----------------------------------------
-            // APLICAR FILTROS ACTIVOS
-            // -----------------------------------------
-
-            FiltrarRankingInterno();
-
-
-            // -----------------------------------------
-            // VOLVER A LA PRIMERA PÁGINA
-            // -----------------------------------------
-
-            paginaActual = 0;
-
-
-            // -----------------------------------------
-            // MOSTRAR
-            // -----------------------------------------
-
-            MostrarPagina();
-
-
-            Debug.Log(
-                "RankingMundial -> Ranking actualizado correctamente."
-            );
-        }
-        catch (Exception error)
-        {
-            Debug.LogError(
-                "RankingMundial -> Error al actualizar ranking: "
-                + error.Message
-            );
-        }
-
-        actualizacionEnCurso = false;
+        if (!ValidarFiltroTiempo()) return;
+        int paginaAnterior = paginaActual;
+        paginaActual = 0;
+        if (!await CargarPaginaActualAsync()) paginaActual = paginaAnterior;
     }
 
+    public async void FiltrarRanking()
+    {
+        if (!ValidarFiltroTiempo()) return;
+        if (RankingOnline.Instancia != null && !RankingOnline.Instancia.UsarMostrarRankingV2)
+        {
+            paginaActual = 0;
+            FiltrarRankingInterno();
+            MostrarPaginaV1();
+            return;
+        }
 
-    //==================================================
+        int paginaAnterior = paginaActual;
+        paginaActual = 0;
+        if (!await CargarPaginaActualAsync()) paginaActual = paginaAnterior;
+    }
+
     // FILTRAR RANKING
     //==================================================
 
-    public void FiltrarRanking()
-    {
-        if (!ValidarFiltroTiempo())
-        {
-            return;
-        }
-
-
-        // ---------------------------------------------
-        // OBTENER NUEVO TIEMPO MÍNIMO
-        // ---------------------------------------------
-
-        tiempoMinimoSegundos =
-            ObtenerTiempoMinimo();
-
-
-        Debug.Log(
-            "RankingMundial -> Aplicando filtros..."
-        );
-
-
-        // ---------------------------------------------
-        // APLICAR FILTROS
-        // ---------------------------------------------
-
-        FiltrarRankingInterno();
-
-
-        // ---------------------------------------------
-        // VOLVER A PRIMERA PÁGINA
-        // ---------------------------------------------
-
-        paginaActual = 0;
-
-
-        // ---------------------------------------------
-        // MOSTRAR
-        // ---------------------------------------------
-
-        MostrarPagina();
-
-
-        Debug.Log(
-            "RankingMundial -> Filtros aplicados."
-        );
-    }
-
-
-    //==================================================
-    // FILTRADO INTERNO
-    //==================================================
-
-    private void FiltrarRankingInterno()
-    {
-        resultadosFiltrados =
-            new List<RankingOnline.ResultadoRanking>();
-
-
-        string nivelSeleccionado =
-            ObtenerNivelSeleccionado();
-
-
-        foreach (
-            RankingOnline.ResultadoRanking entrada
-            in resultados)
-        {
-            // -----------------------------------------
-            // FILTRO DE TIEMPO
-            // -----------------------------------------
-
-            if (
-                entrada.tiempo <
-                tiempoMinimoSegundos
-            )
-            {
-                continue;
-            }
-
-
-            // -----------------------------------------
-            // FILTRO DE NIVEL
-            // -----------------------------------------
-
-            if (
-                nivelSeleccionado != "Todos" &&
-                !string.Equals(
-                    entrada.nivel?.Trim(),
-                    nivelSeleccionado,
-                    StringComparison.OrdinalIgnoreCase
-                )
-            )
-            {
-                continue;
-            }
-
-
-            resultadosFiltrados.Add(
-                entrada
-            );
-        }
-    }
-
-    //==================================================
     // OBTENER NIVEL SELECCIONADO
     //==================================================
 
@@ -549,173 +341,164 @@ public class RankingMundial : MonoBehaviour
 
 
     //==================================================
-    // PAGINACIÓN
+    // PAGINACIï¿½N
     //==================================================
 
-    private int ObtenerCantidadPaginas()
+    private async Task<bool> CargarPaginaActualAsync()
     {
-        if (
-            resultadosFiltrados == null ||
-            resultadosFiltrados.Count == 0
-        )
+        if (actualizacionEnCurso) return false;
+
+        RankingOnline rankingOnline = RankingOnline.Instancia;
+        if (rankingOnline == null)
         {
-            return 0;
+            Debug.LogWarning("RankingMundial -> RankingOnline no encontrado.");
+            return false;
         }
 
+        actualizacionEnCurso = true;
+        EstablecerControlesDuranteCarga(true);
 
-        return Mathf.CeilToInt(
-            resultadosFiltrados.Count /
-            (float)ResultadosPorPagina
-        );
+        try
+        {
+            int paginaSolicitada = Mathf.Max(1, paginaActual + 1);
+            if (!rankingOnline.UsarMostrarRankingV2)
+            {
+                RankingOnline.RespuestaRanking respuestaV1 =
+                    await rankingOnline.ObtenerRanking("", 0, 1, MaxResultadosV1, false);
+
+                if (respuestaV1 == null)
+                {
+                    Debug.LogWarning("RankingMundial -> No se pudo cargar el ranking V1.");
+                    return false;
+                }
+
+                resultados = new List<RankingOnline.ResultadoRanking>(respuestaV1.resultados ?? Array.Empty<RankingOnline.ResultadoRanking>());
+                FiltrarRankingInterno();
+                cantidadPaginas = Mathf.CeilToInt((float)resultadosFiltrados.Count / ResultadosPorPagina);
+                paginaActual = Mathf.Clamp(paginaSolicitada - 1, 0, Mathf.Max(0, cantidadPaginas - 1));
+                MostrarPaginaV1();
+                return true;
+            }
+
+            string nivel = ObtenerNivelSeleccionado();
+            if (nivel == "Todos") nivel = "";
+            int tiempoMinimo = ObtenerTiempoMinimo();
+
+            RankingOnline.RespuestaRanking respuesta =
+                await rankingOnline.ObtenerRanking(
+                    nivel,
+                    tiempoMinimo,
+                    1,
+                    MaxResultadosSnapshotV2);
+
+            if (respuesta == null)
+            {
+                Debug.LogWarning("RankingMundial -> No se pudo cargar el ranking.");
+                return false;
+            }
+
+            snapshotV2 = new List<RankingOnline.ResultadoRanking>(
+                respuesta.resultados ?? Array.Empty<RankingOnline.ResultadoRanking>());
+            paginaActual = 0;
+            MostrarPaginaSnapshotV2();
+            return true;
+        }
+        catch (Exception error)
+        {
+            Debug.LogError("RankingMundial -> Error al actualizar ranking: " + error.Message);
+            return false;
+        }
+        finally
+        {
+            actualizacionEnCurso = false;
+            EstablecerControlesDuranteCarga(false);
+        }
     }
 
-
-    private void MostrarPagina()
+    private void EstablecerControlesDuranteCarga(bool cargando)
     {
-        int cantidadPaginas =
-            ObtenerCantidadPaginas();
+        if (botonFiltrar != null) botonFiltrar.interactable = !cargando;
+        if (botonActualizar != null) botonActualizar.interactable = !cargando;
+        if (botonAnterior != null) botonAnterior.interactable = !cargando;
+        if (botonSiguiente != null) botonSiguiente.interactable = !cargando;
+    }
 
-
-        // ---------------------------------------------
-        // NO HAY RESULTADOS
-        // ---------------------------------------------
+    private void MostrarPaginaSnapshotV2()
+    {
+        cantidadPaginas = Mathf.CeilToInt(
+            (float)snapshotV2.Count / ResultadosPorPagina);
+        LimpiarRanking();
 
         if (cantidadPaginas == 0)
         {
-            LimpiarRanking();
-
-
-            if (textoPagina != null)
-            {
-                textoPagina.text = "0/0";
-            }
-
-
-            if (botonAnterior != null)
-            {
-                botonAnterior.gameObject.SetActive(false);
-            }
-
-
-            if (botonSiguiente != null)
-            {
-                botonSiguiente.gameObject.SetActive(false);
-            }
-
-
+            paginaActual = 0;
+            if (textoPagina != null) textoPagina.text = "0/0";
+            if (botonAnterior != null) botonAnterior.gameObject.SetActive(false);
+            if (botonSiguiente != null) botonSiguiente.gameObject.SetActive(false);
             return;
         }
 
-
-        // ---------------------------------------------
-        // ASEGURAR PÁGINA VÁLIDA
-        // ---------------------------------------------
-
-        if (paginaActual < 0)
-        {
-            paginaActual = 0;
-        }
-
-
-        if (
-            paginaActual >=
-            cantidadPaginas
-        )
-        {
-            paginaActual =
-                cantidadPaginas - 1;
-        }
-
-
-        // ---------------------------------------------
-        // TEXTO DE PÁGINA
-        // ---------------------------------------------
-
+        paginaActual = Mathf.Clamp(paginaActual, 0, cantidadPaginas - 1);
         if (textoPagina != null)
-        {
-            textoPagina.text =
-                (paginaActual + 1)
-                + "/"
-                + cantidadPaginas;
-        }
-
-
-        // ---------------------------------------------
-        // BOTÓN ANTERIOR
-        // ---------------------------------------------
+            textoPagina.text = (paginaActual + 1) + "/" + cantidadPaginas;
 
         if (botonAnterior != null)
-        {
-            botonAnterior.gameObject.SetActive(
-                paginaActual > 0
-            );
-        }
-
-
-        // ---------------------------------------------
-        // BOTÓN SIGUIENTE
-        // ---------------------------------------------
-
+            botonAnterior.gameObject.SetActive(paginaActual > 0);
         if (botonSiguiente != null)
+            botonSiguiente.gameObject.SetActive(paginaActual < cantidadPaginas - 1);
+
+        int inicio = paginaActual * ResultadosPorPagina;
+        int cantidadVisible = Mathf.Min(
+            ResultadosPorPagina,
+            snapshotV2.Count - inicio);
+        for (int i = 0; i < cantidadVisible; i++)
         {
-            botonSiguiente.gameObject.SetActive(
-                paginaActual <
-                cantidadPaginas - 1
-            );
-        }
-
-
-        // ---------------------------------------------
-        // LIMPIAR FILAS
-        // ---------------------------------------------
-
-        LimpiarRanking();
-
-
-        // ---------------------------------------------
-        // RANGO
-        // ---------------------------------------------
-
-        int inicio =
-            paginaActual *
-            ResultadosPorPagina;
-
-
-        int fin =
-            Mathf.Min(
-                inicio +
-                ResultadosPorPagina,
-                resultadosFiltrados.Count
-            );
-
-
-        // ---------------------------------------------
-        // MOSTRAR
-        // ---------------------------------------------
-
-        for (
-            int i = inicio;
-            i < fin;
-            i++
-        )
-        {
-            int fila =
-                i - inicio;
-
-
-            RankingOnline.ResultadoRanking entrada =
-                resultadosFiltrados[i];
-
-
-            MostrarEntrada(
-                fila,
-                entrada,
-                i + 1
-            );
+            RankingOnline.ResultadoRanking resultado = snapshotV2[inicio + i];
+            MostrarEntrada(i, resultado, resultado.posicion);
         }
     }
 
-    //==================================================
+    private void FiltrarRankingInterno()
+    {
+        resultadosFiltrados.Clear();
+        string nivelSeleccionado = ObtenerNivelSeleccionado();
+        int tiempoMinimo = ObtenerTiempoMinimo();
+
+        foreach (RankingOnline.ResultadoRanking resultado in resultados)
+        {
+            if (resultado == null || resultado.tiempo < tiempoMinimo) continue;
+            if (nivelSeleccionado != "Todos" &&
+                !string.Equals(resultado.nivel?.Trim(), nivelSeleccionado, StringComparison.OrdinalIgnoreCase)) continue;
+            resultadosFiltrados.Add(resultado);
+        }
+    }
+
+    private void MostrarPaginaV1()
+    {
+        cantidadPaginas = Mathf.CeilToInt((float)resultadosFiltrados.Count / ResultadosPorPagina);
+        LimpiarRanking();
+
+        if (cantidadPaginas == 0)
+        {
+            paginaActual = 0;
+            if (textoPagina != null) textoPagina.text = "0/0";
+            if (botonAnterior != null) botonAnterior.gameObject.SetActive(false);
+            if (botonSiguiente != null) botonSiguiente.gameObject.SetActive(false);
+            return;
+        }
+
+        paginaActual = Mathf.Clamp(paginaActual, 0, cantidadPaginas - 1);
+        if (textoPagina != null) textoPagina.text = (paginaActual + 1) + "/" + cantidadPaginas;
+        if (botonAnterior != null) botonAnterior.gameObject.SetActive(paginaActual > 0);
+        if (botonSiguiente != null) botonSiguiente.gameObject.SetActive(paginaActual < cantidadPaginas - 1);
+
+        int inicio = paginaActual * ResultadosPorPagina;
+        int cantidadVisible = Mathf.Min(ResultadosPorPagina, resultadosFiltrados.Count - inicio);
+        for (int fila = 0; fila < cantidadVisible; fila++)
+        {
+            MostrarEntrada(fila, resultadosFiltrados[inicio + fila], inicio + fila + 1);
+        }
+    }
     // MOSTRAR ENTRADA
     //==================================================
 
@@ -854,51 +637,34 @@ public class RankingMundial : MonoBehaviour
 
 
     //==================================================
-    // PÁGINA ANTERIOR
+    // Pï¿½GINA ANTERIOR
     //==================================================
 
     public void PaginaAnterior()
     {
-        if (paginaActual <= 0)
+        if (actualizacionEnCurso || paginaActual <= 0) return;
+        if (RankingOnline.Instancia != null && !RankingOnline.Instancia.UsarMostrarRankingV2)
         {
+            paginaActual--;
+            MostrarPaginaV1();
             return;
         }
-
-
         paginaActual--;
-
-
-        MostrarPagina();
+        MostrarPaginaSnapshotV2();
     }
-
-
-    //==================================================
-    // PÁGINA SIGUIENTE
-    //==================================================
 
     public void PaginaSiguiente()
     {
-        int cantidadPaginas =
-            ObtenerCantidadPaginas();
-
-
-        if (
-            paginaActual >=
-            cantidadPaginas - 1
-        )
+        if (actualizacionEnCurso || paginaActual >= cantidadPaginas - 1) return;
+        if (RankingOnline.Instancia != null && !RankingOnline.Instancia.UsarMostrarRankingV2)
         {
+            paginaActual++;
+            MostrarPaginaV1();
             return;
         }
-
-
         paginaActual++;
-
-
-        MostrarPagina();
+        MostrarPaginaSnapshotV2();
     }
-
-
-    //==================================================
     // VALIDAR TIEMPO
     //==================================================
 
@@ -1017,7 +783,7 @@ public class RankingMundial : MonoBehaviour
 
 
     //==================================================
-    // OBTENER TIEMPO MÍNIMO
+    // OBTENER TIEMPO Mï¿½NIMO
     //==================================================
 
     private int ObtenerTiempoMinimo()
@@ -1152,3 +918,4 @@ public class RankingMundial : MonoBehaviour
     }
 
 }
+

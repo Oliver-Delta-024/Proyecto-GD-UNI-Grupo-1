@@ -83,10 +83,6 @@ public class GeneradorControlNivelPersonalizado : GeneradorBase
     // ESTADO DE EVENTOS
     //==================================================
 
-    private bool overdriveActivo = false;
-
-    private float multiplicadorOverdrive = 1f;
-
     private bool slowActivo = false;
 
     private float multiplicadorSlow = 1f;
@@ -378,8 +374,6 @@ public class GeneradorControlNivelPersonalizado : GeneradorBase
 
     public override void ActivarOverdrive(float multiplicador)
     {
-        overdriveActivo = true;
-        multiplicadorOverdrive = multiplicador;
 
         // Asegurarnos de tener todos los discos actuales
         ActualizarListaDiscos();
@@ -415,8 +409,6 @@ public class GeneradorControlNivelPersonalizado : GeneradorBase
 
     public override void DesactivarOverdrive()
     {
-        overdriveActivo = false;
-        multiplicadorOverdrive = 1f;
 
         foreach (GameObject objetoDisco in discosActivos)
         {

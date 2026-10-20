@@ -2,49 +2,39 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Unity.Services.Authentication;
 using UnityEngine;
 using UnityEngine.Networking;
+using Stopwatch = System.Diagnostics.Stopwatch;
 
 public class RankingOnline : MonoBehaviour
 {
-    //========================================
-    // INSTANCIA
-    //========================================
-
     public static RankingOnline Instancia;
 
-
-    //========================================
-    // CONFIGURACI�N
-    //========================================
-
-    [Header("Supabase")]
+    [Header("Supabase V2")]
     [SerializeField]
     private string urlRegistrarPartida =
-        "https://rtngwptcrecttvbluhgv.supabase.co/functions/v1/registrar-partida";
+        "https://rtngwptcrecttvbluhgv.supabase.co/functions/v1/registrar-partida-v2";
 
     [SerializeField]
     private string urlMostrarRanking =
-        "https://rtngwptcrecttvbluhgv.supabase.co/functions/v1/mostrar-ranking";
+        "https://rtngwptcrecttvbluhgv.supabase.co/functions/v1/mostrar-ranking-v2";
 
     [SerializeField]
     private string supabasePublishableKey = "";
 
+    private const bool FuncionesRegistroV2Activas = true;
+    private const bool FuncionLecturaV2Activa = true;
 
-    //========================================
-    // ESTADO
-    //========================================
+    public bool UsarFuncionesV2 => FuncionesRegistroV2Activas;
+    public bool UsarMostrarRankingV2 => FuncionLecturaV2Activa;
 
     public bool Disponible { get; private set; }
 
-
-    //========================================
-    // UNITY
-    //========================================
+    private Task<bool> tareaPreparacion;
 
     private void Awake()
     {
-        // Evitar duplicados
         if (Instancia != null && Instancia != this)
         {
             Destroy(gameObject);
@@ -52,312 +42,341 @@ public class RankingOnline : MonoBehaviour
         }
 
         Instancia = this;
-
-        // Mantener entre escenas
         DontDestroyOnLoad(gameObject);
     }
 
-
-    //========================================
-    // INICIALIZAR
-    //========================================
-
     private async void Start()
     {
-        await EsperarAutenticacion();
+        await ObtenerTareaPreparacion();
     }
 
-
-    private async Task EsperarAutenticacion()
+    private Task<bool> ObtenerTareaPreparacion()
     {
-        if (SistemaAutenticacion.Instancia == null)
+        if (tareaPreparacion == null)
         {
-            Debug.LogWarning(
-                "RankingOnline -> SistemaAutenticacion no encontrado."
-            );
-
-            Disponible = false;
-            return;
+            tareaPreparacion = PrepararSistemaAsync();
         }
 
-        // Esperar a que Unity Authentication termine
-        await SistemaAutenticacion.Instancia.Inicializacion;
-
-        ComprobarDisponibilidad();
+        return tareaPreparacion;
     }
 
-
-    private void ComprobarDisponibilidad()
+    private async Task<bool> PrepararSistemaAsync()
     {
-        if (SistemaAutenticacion.Instancia == null)
+        SistemaAutenticacion autenticacion = SistemaAutenticacion.Instancia;
+        if (autenticacion == null)
         {
-            Debug.LogWarning(
-                "RankingOnline -> SistemaAutenticacion no encontrado."
-            );
-
+            Debug.LogWarning("RankingOnline V2 -> SistemaAutenticacion no encontrado.");
             Disponible = false;
-            return;
+            return false;
         }
 
-        if (!SistemaAutenticacion.Instancia.Autenticado)
+        try
         {
-            Debug.LogWarning(
-                "RankingOnline -> La autenticaci�n fall�."
-            );
+            if (autenticacion.Inicializacion != null)
+            {
+                await autenticacion.Inicializacion;
+            }
 
-            Disponible = false;
-            return;
+            Disponible = autenticacion.Autenticado &&
+                !string.IsNullOrEmpty(autenticacion.PlayerId);
+
+            if (!Disponible)
+            {
+                Debug.LogWarning("RankingOnline V2 -> Unity Authentication no está disponible.");
+            }
+
+            return Disponible;
         }
-
-        Disponible = true;
-
-        Debug.Log(
-            "RankingOnline -> Sistema preparado."
-        );
-
-        Debug.Log(
-            "RankingOnline -> Player ID: "
-            + SistemaAutenticacion.Instancia.PlayerId
-        );
+        catch (Exception error)
+        {
+            Disponible = false;
+            Debug.LogError("RankingOnline V2 -> Falló la preparación de autenticación: " + error.Message);
+            return false;
+        }
     }
-
-
-    //========================================
-    // REGISTRAR PARTIDA
-    //========================================
 
     public async Task<bool> RegistrarPartida(
         string nombre,
         int tiempo,
-        string nivel)
+        string nivel,
+        bool? usarV2 = null)
     {
-        if (!Disponible)
-        {
-            Debug.LogWarning(
-                "RankingOnline -> El sistema no est� disponible."
-            );
+        bool usarVersionV2 = usarV2 ?? FuncionesRegistroV2Activas;
+        string version = usarVersionV2 ? "V2" : "V1";
+        string endpoint = usarVersionV2
+            ? urlRegistrarPartida
+            : urlRegistrarPartida.Replace("registrar-partida-v2", "registrar-partida");
+        long inicioTotal = Stopwatch.GetTimestamp();
+        long inicioAuth = Stopwatch.GetTimestamp();
+        bool disponible = await ObtenerTareaPreparacion();
+        double authMs = MilisegundosDesde(inicioAuth);
 
+        if (!disponible || SistemaAutenticacion.Instancia == null)
+        {
+            if (usarVersionV2)
+            {
+                Debug.LogWarning(
+                    "RankingOnline V2 -> Registro cancelado: Unity Authentication no terminó correctamente o no hay una sesión disponible.");
+            }
+
+            RegistrarMetricas(version + " POST", authMs, 0, 0, 0, inicioTotal, 0, false, "");
             return false;
         }
 
-        if (SistemaAutenticacion.Instancia == null)
+        string accessToken = null;
+        if (usarVersionV2)
         {
-            Debug.LogWarning(
-                "RankingOnline -> SistemaAutenticacion no encontrado."
-            );
+            if (!AuthenticationService.Instance.IsSignedIn)
+            {
+                Debug.LogWarning(
+                    "RankingOnline V2 -> Registro cancelado: Unity Authentication no tiene una sesión iniciada.");
+                RegistrarMetricas(version + " POST", authMs, 0, 0, 0,
+                    inicioTotal, 0, false, "");
+                return false;
+            }
 
-            return false;
+            accessToken = AuthenticationService.Instance.AccessToken;
+            if (string.IsNullOrWhiteSpace(accessToken))
+            {
+                Debug.LogWarning(
+                    "RankingOnline V2 -> Registro cancelado: la sesión no tiene un AccessToken disponible.");
+                RegistrarMetricas(version + " POST", authMs, 0, 0, 0,
+                    inicioTotal, 0, false, "");
+                return false;
+            }
         }
 
-        // Obtener Player ID desde Unity Authentication
-        string playerId =
-            SistemaAutenticacion.Instancia.PlayerId;
-
-        // Crear datos de la partida
-        DatosPartida datos = new DatosPartida
+        long inicioPreparacionPeticion = Stopwatch.GetTimestamp();
+        string json;
+        if (usarVersionV2)
         {
-            player_id = playerId,
-            nombre = nombre,
-            tiempo = tiempo,
-            nivel = nivel
-        };
+            json = JsonUtility.ToJson(new DatosPartidaV2
+            {
+                player_id = SistemaAutenticacion.Instancia.PlayerId,
+                nombre = nombre,
+                tiempo = tiempo,
+                nivel = nivel,
+                run_id = ObtenerRunIdV2(nivel)
+            });
+        }
+        else
+        {
+            json = JsonUtility.ToJson(new DatosPartidaV1
+            {
+                player_id = SistemaAutenticacion.Instancia.PlayerId,
+                nombre = nombre,
+                tiempo = tiempo,
+                nivel = nivel
+            });
+        }
 
-        string json = JsonUtility.ToJson(datos);
+        byte[] body = Encoding.UTF8.GetBytes(json);
+        long inicioHttp = Stopwatch.GetTimestamp();
+        double preRequestMs = MilisegundosDesde(inicioPreparacionPeticion);
 
         try
         {
-            using (UnityWebRequest request =
-                new UnityWebRequest(
-                    urlRegistrarPartida,
-                    UnityWebRequest.kHttpVerbPOST))
+            using (UnityWebRequest request = CrearSolicitudRegistro(
+                endpoint,
+                body,
+                usarVersionV2,
+                accessToken))
             {
-                byte[] body =
-                    Encoding.UTF8.GetBytes(json);
-
-                request.uploadHandler =
-                    new UploadHandlerRaw(body);
-
-                request.downloadHandler =
-                    new DownloadHandlerBuffer();
-
-                request.SetRequestHeader(
-                    "Content-Type",
-                    "application/json"
-                );
-
-                request.SetRequestHeader(
-                    "apikey",
-                    supabasePublishableKey
-                );
-
                 await request.SendWebRequest();
+                double httpMs = MilisegundosDesde(inicioHttp);
+                bool success = request.result == UnityWebRequest.Result.Success;
 
-                if (request.result !=
-                    UnityWebRequest.Result.Success)
+                if (!success)
                 {
-                    Debug.LogError(
-                        "RankingOnline -> Error al registrar partida: "
-                        + request.error
-                    );
-
-                    Debug.LogError(
-                        "RankingOnline -> Respuesta: "
-                        + request.downloadHandler.text
-                    );
-
-                    return false;
+                    Debug.LogWarning(
+                        "RankingOnline " + version + " -> POST falló. HTTP " +
+                        request.responseCode + " | " + request.error);
                 }
 
-                Debug.Log(
-                    "RankingOnline -> Partida registrada correctamente."
-                );
-
-                Debug.Log(
-                    "RankingOnline -> Respuesta: "
-                    + request.downloadHandler.text
-                );
-
-                return true;
+                string edgeTiming = request.GetResponseHeader("Server-Timing") ?? "";
+                RegistrarMetricas(version + " POST", authMs, preRequestMs, httpMs, 0,
+                    inicioTotal, body.Length, success, edgeTiming);
+                return success;
             }
         }
         catch (Exception error)
         {
-            Debug.LogError(
-                "RankingOnline -> Error de conexi�n: "
-                + error.Message
-            );
-
+            RegistrarMetricas(version + " POST", authMs, preRequestMs,
+                MilisegundosDesde(inicioHttp), 0, inicioTotal, body.Length, false, "");
+            Debug.LogError("RankingOnline " + version + " -> Error de conexión POST: " + error.Message);
             return false;
         }
     }
 
+    /// <summary>
+    /// Mantiene el identificador al continuar una partida guardada y crea uno
+    /// nuevo cuando el controlador confirma que comienza una partida nueva.
+    /// </summary>
+    public void PrepararRunIdV2(bool continuarPartida, string identificadorModo)
+    {
+        string claveRunId = RunIdV2Lifecycle.PreferenceKeyForMode(identificadorModo);
+        string runId = PlayerPrefs.GetString(claveRunId, "");
 
-    //========================================
-    // OBTENER RANKING
-    //========================================
+        runId = RunIdV2Lifecycle.Resolve(
+            continuarPartida,
+            runId,
+            () => Guid.NewGuid().ToString("D"));
+
+        PlayerPrefs.SetString(claveRunId, runId);
+        PlayerPrefs.Save();
+    }
+
+    private static string ObtenerRunIdV2(string nivel)
+    {
+        string claveRunId = RunIdV2Lifecycle.PreferenceKeyForMode(nivel);
+        string runId = PlayerPrefs.GetString(claveRunId, "");
+        runId = RunIdV2Lifecycle.Resolve(
+            true,
+            runId,
+            () => Guid.NewGuid().ToString("D"));
+        PlayerPrefs.SetString(claveRunId, runId);
+        PlayerPrefs.Save();
+        return runId;
+    }
+
+    private UnityWebRequest CrearSolicitudRegistro(
+        string endpoint,
+        byte[] body,
+        bool usarVersionV2,
+        string accessToken)
+    {
+        UnityWebRequest request = new UnityWebRequest(
+            endpoint,
+            UnityWebRequest.kHttpVerbPOST);
+        request.uploadHandler = new UploadHandlerRaw(body);
+        request.downloadHandler = new DownloadHandlerBuffer();
+        request.SetRequestHeader("Content-Type", "application/json");
+        request.SetRequestHeader("apikey", supabasePublishableKey);
+
+        if (usarVersionV2)
+        {
+            request.SetRequestHeader(
+                "Authorization",
+                "Bearer " + accessToken);
+        }
+
+        return request;
+    }
 
     public async Task<RespuestaRanking> ObtenerRanking(
         string nivel = "",
         int tiempoMinimo = 0,
         int pagina = 1,
-        int cantidad = 5)
+        int cantidad = 5,
+        bool? usarV2 = null)
     {
-        if (!Disponible)
-        {
-            Debug.LogWarning(
-                "RankingOnline -> El sistema no est� disponible."
-            );
+        bool usarVersionV2 = usarV2 ?? FuncionLecturaV2Activa;
+        string version = usarVersionV2 ? "V2" : "V1";
+        string endpoint = usarVersionV2
+            ? urlMostrarRanking
+            : urlMostrarRanking.Replace("mostrar-ranking-v2", "mostrar-ranking");
+        long inicioTotal = Stopwatch.GetTimestamp();
+        long inicioAuth = Stopwatch.GetTimestamp();
+        bool disponible = await ObtenerTareaPreparacion();
+        double authMs = MilisegundosDesde(inicioAuth);
 
+        if (!disponible)
+        {
+            RegistrarMetricas(version + " GET", authMs, 0, 0, 0, inicioTotal, 0, false, "");
             return null;
         }
 
+        long inicioPreparacionPeticion = Stopwatch.GetTimestamp();
+        List<string> parametros = new List<string>();
+        if (!string.IsNullOrWhiteSpace(nivel) && nivel != "Todos")
+        {
+            parametros.Add("nivel=" + UnityWebRequest.EscapeURL(nivel.Trim()));
+        }
+
+        if (tiempoMinimo > 0)
+        {
+            parametros.Add("tiempo_min=" + tiempoMinimo);
+        }
+
+        parametros.Add("pagina=" + Mathf.Max(1, pagina));
+        parametros.Add("cantidad=" + Mathf.Clamp(cantidad, 1, 200));
+
+        string url = endpoint + "?" + string.Join("&", parametros);
+        long inicioHttp = Stopwatch.GetTimestamp();
+        double preRequestMs = MilisegundosDesde(inicioPreparacionPeticion);
+
         try
         {
-            // Construir URL
-            string url = urlMostrarRanking;
-
-            List<string> parametros =
-                new List<string>();
-
-            if (!string.IsNullOrEmpty(nivel))
+            using (UnityWebRequest request = UnityWebRequest.Get(url))
             {
-                parametros.Add(
-                    "nivel="
-                    + UnityWebRequest.EscapeURL(nivel)
-                );
-            }
-
-            if (tiempoMinimo > 0)
-            {
-                parametros.Add(
-                    "tiempo_min="
-                    + tiempoMinimo
-                );
-            }
-
-            parametros.Add(
-                "pagina="
-                + pagina
-            );
-
-            parametros.Add(
-                "cantidad="
-                + cantidad
-            );
-
-            if (parametros.Count > 0)
-            {
-                url += "?"
-                    + string.Join("&", parametros);
-            }
-
-            using (UnityWebRequest request =
-                UnityWebRequest.Get(url))
-            {
-                request.downloadHandler =
-                    new DownloadHandlerBuffer();
-
-                request.SetRequestHeader(
-                    "apikey",
-                    supabasePublishableKey
-                );
+                request.downloadHandler = new DownloadHandlerBuffer();
+                request.SetRequestHeader("apikey", supabasePublishableKey);
 
                 await request.SendWebRequest();
+                double httpMs = MilisegundosDesde(inicioHttp);
 
-                if (request.result !=
-                    UnityWebRequest.Result.Success)
+                if (request.result != UnityWebRequest.Result.Success)
                 {
-                    Debug.LogError(
-                        "RankingOnline -> Error al obtener ranking: "
-                        + request.error
-                    );
-
-                    Debug.LogError(
-                        "RankingOnline -> Respuesta: "
-                        + request.downloadHandler.text
-                    );
-
+                    Debug.LogWarning(
+                        "RankingOnline " + version + " -> GET falló. HTTP " +
+                        request.responseCode + " | " + request.error);
+                    RegistrarMetricas(version + " GET", authMs, preRequestMs, httpMs, 0,
+                        inicioTotal, request.downloadHandler?.data?.Length ?? 0,
+                        false, request.GetResponseHeader("Server-Timing") ?? "");
                     return null;
                 }
 
-                string respuesta =
-                    request.downloadHandler.text;
-
-                Debug.Log(
-                    "RankingOnline -> Ranking recibido."
-                );
-
-                Debug.Log(
-                    "RankingOnline -> Respuesta: "
-                    + respuesta
-                );
-
+                long inicioParseo = Stopwatch.GetTimestamp();
+                string respuesta = request.downloadHandler.text;
                 RespuestaRanking ranking =
-                    JsonUtility.FromJson<RespuestaRanking>(
-                        respuesta
-                    );
+                    JsonUtility.FromJson<RespuestaRanking>(respuesta);
+                double parseoMs = MilisegundosDesde(inicioParseo);
 
+                RegistrarMetricas(version + " GET", authMs, preRequestMs, httpMs, parseoMs,
+                    inicioTotal, request.downloadHandler.data?.Length ?? 0,
+                    ranking != null, request.GetResponseHeader("Server-Timing") ?? "");
                 return ranking;
             }
         }
         catch (Exception error)
         {
-            Debug.LogError(
-                "RankingOnline -> Error de conexi�n: "
-                + error.Message
-            );
-
+            RegistrarMetricas(version + " GET", authMs, preRequestMs,
+                MilisegundosDesde(inicioHttp), 0, inicioTotal, 0, false, "");
+            Debug.LogError("RankingOnline " + version + " -> Error de conexión GET: " + error.Message);
             return null;
         }
     }
 
+    private static double MilisegundosDesde(long inicio)
+    {
+        return (Stopwatch.GetTimestamp() - inicio) * 1000d / Stopwatch.Frequency;
+    }
 
-    //========================================
-    // CLASES DE DATOS
-    //========================================
+    private static void RegistrarMetricas(
+        string metodo,
+        double authMs,
+        double preRequestMs,
+        double httpMs,
+        double parseoMs,
+        long inicioTotal,
+        int bytes,
+        bool success,
+        string edgeTiming)
+    {
+        Debug.Log(
+            "RankingOnline métricas -> " + metodo +
+            " | auth_wait_ms=" + authMs.ToString("F2") +
+            " | pre_request_ms=" + preRequestMs.ToString("F2") +
+            " | http_ms=" + httpMs.ToString("F2") +
+            " | parse_ms=" + parseoMs.ToString("F2") +
+            " | total_ms=" + MilisegundosDesde(inicioTotal).ToString("F2") +
+            " | payload_bytes=" + bytes +
+            " | ok=" + success +
+            " | edge_timing=" + edgeTiming);
+    }
 
     [Serializable]
-    private class DatosPartida
+    private class DatosPartidaV1
     {
         public string player_id;
         public string nombre;
@@ -365,6 +384,15 @@ public class RankingOnline : MonoBehaviour
         public string nivel;
     }
 
+    [Serializable]
+    private class DatosPartidaV2
+    {
+        public string player_id;
+        public string nombre;
+        public int tiempo;
+        public string nivel;
+        public string run_id;
+    }
 
     [Serializable]
     public class ResultadoRanking
@@ -376,7 +404,6 @@ public class RankingOnline : MonoBehaviour
         public string created_at;
     }
 
-
     [Serializable]
     public class RespuestaRanking
     {
@@ -385,129 +412,67 @@ public class RankingOnline : MonoBehaviour
         public int cantidad;
         public int total;
         public int total_paginas;
+        public bool has_more;
     }
-
-    //========================================
-    // PRUEBA DE CONEXI�N
-    //========================================
-
-    //==================================================
-    // PRUEBA 1: REGISTRAR PARTIDA
-    //==================================================
 
     public async void ProbarRegistroDePartida()
     {
-        Debug.Log(
-            "========================================"
-        );
-
-        Debug.Log(
-            "RankingOnline -> INICIANDO PRUEBA DE REGISTRO"
-        );
-
-        bool resultado = await RegistrarPartida(
-            "PruebaUnity",
-            523,
-            "Nivel 1"
-        );
-
-        if (resultado)
-        {
-            Debug.Log(
-                "RankingOnline -> PRUEBA DE REGISTRO EXITOSA"
-            );
-        }
-        else
-        {
-            Debug.LogError(
-                "RankingOnline -> PRUEBA DE REGISTRO FALLIDA"
-            );
-        }
-
-        Debug.Log(
-            "========================================"
-        );
+        bool resultado = await RegistrarPartida("PruebaUnity", 523, "Nivel 1");
+        Debug.Log(resultado
+            ? "RankingOnline V2 -> Prueba de registro exitosa."
+            : "RankingOnline V2 -> Prueba de registro fallida.");
     }
-
-    //==================================================
-    // PRUEBA 2: MOSTRAR RANKING
-    //==================================================
 
     public async void ProbarMostrarRanking()
     {
-        Debug.Log(
-            "========================================"
-        );
-
-        Debug.Log(
-            "RankingOnline -> INICIANDO PRUEBA DE RANKING"
-        );
-
-        RespuestaRanking ranking =
-            await ObtenerRanking(
-                "",
-                0,
-                1,
-                5
-            );
-
+        RespuestaRanking ranking = await ObtenerRanking("", 0, 1, 5, true);
         if (ranking == null)
         {
-            Debug.LogError(
-                "RankingOnline -> PRUEBA DE RANKING FALLIDA"
-            );
-
-            Debug.Log(
-                "========================================"
-            );
-
+            Debug.LogWarning("RankingOnline V2 -> Prueba de ranking fallida.");
             return;
         }
 
         Debug.Log(
-            "RankingOnline -> PRUEBA DE RANKING EXITOSA"
-        );
+            "RankingOnline V2 -> Prueba de ranking exitosa. Resultados: " +
+            (ranking.resultados?.Length ?? 0) +
+            " | página " + ranking.pagina + "/" + ranking.total_paginas);
+    }
 
-        Debug.Log(
-            "RankingOnline -> Total: "
-            + ranking.total
-        );
+    public async void ProbarComparacionRankingV1V2()
+    {
+        RespuestaRanking v1 = await ObtenerRanking("", 0, 1, 5, false);
+        RespuestaRanking v2 = await ObtenerRanking("", 0, 1, 5, true);
 
-        Debug.Log(
-            "RankingOnline -> P�gina: "
-            + ranking.pagina
-            + " / "
-            + ranking.total_paginas
-        );
-
-        if (ranking.resultados == null ||
-            ranking.resultados.Length == 0)
+        if (v1 == null || v2 == null)
         {
-            Debug.Log(
-                "RankingOnline -> No hay resultados."
-            );
+            Debug.LogWarning("RankingOnline -> Comparación V1/V2 incompleta; revisar métricas HTTP.");
+            return;
         }
-        else
+
+        bool iguales = v1.total == v2.total &&
+            v1.resultados != null &&
+            v2.resultados != null &&
+            v1.resultados.Length == v2.resultados.Length;
+
+        if (iguales)
         {
-            foreach (
-                ResultadoRanking resultado
-                in ranking.resultados)
+            for (int i = 0; i < v1.resultados.Length; i++)
             {
-                Debug.Log(
-                    resultado.posicion
-                    + ". "
-                    + resultado.nombre
-                    + " | "
-                    + resultado.nivel
-                    + " | "
-                    + resultado.tiempo
-                    + " segundos"
-                );
+                RankingOnline.ResultadoRanking a = v1.resultados[i];
+                RankingOnline.ResultadoRanking b = v2.resultados[i];
+                if (a.posicion != b.posicion || a.nombre != b.nombre ||
+                    a.nivel != b.nivel || a.tiempo != b.tiempo ||
+                    a.created_at != b.created_at)
+                {
+                    iguales = false;
+                    break;
+                }
             }
         }
 
-        Debug.Log(
-            "========================================"
-        );
+        Debug.Log("RankingOnline -> Comparación V1/V2, página 1: " +
+            (iguales ? "coincide" : "hay diferencias") +
+            " | V1 filas=" + (v1.resultados?.Length ?? 0) +
+            " | V2 filas=" + (v2.resultados?.Length ?? 0));
     }
 }
