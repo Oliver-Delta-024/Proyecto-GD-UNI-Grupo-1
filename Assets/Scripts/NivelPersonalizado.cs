@@ -5,6 +5,8 @@ using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System.Diagnostics;
+using Debug = UnityEngine.Debug;
 
 public class NivelPersonalizado : MonoBehaviour
 {
@@ -15,10 +17,10 @@ public class NivelPersonalizado : MonoBehaviour
     public GameObject BotonEditar;
 
     //==========================================
-    // RESUMEN DE CONFIGURACIÓN - MENÚ
+    // RESUMEN DE CONFIGURACIï¿½N - MENï¿½
     //==========================================
 
-    [Header("Resumen Configuración - Menú")]
+    [Header("Resumen Configuraciï¿½n - Menï¿½")]
 
     public TextMeshProUGUI textoResumenDiscosMenu;
     public TextMeshProUGUI textoResumenMusicaMenu;
@@ -27,10 +29,10 @@ public class NivelPersonalizado : MonoBehaviour
 
 
     //==========================================
-    // RESUMEN DE CONFIGURACIÓN - GAME OVER
+    // RESUMEN DE CONFIGURACIï¿½N - GAME OVER
     //==========================================
 
-    [Header("Resumen Configuración - Game Over")]
+    [Header("Resumen Configuraciï¿½n - Game Over")]
 
     public TextMeshProUGUI textoResumenDiscosGameOver;
     public TextMeshProUGUI textoResumenMusicaGameOver;
@@ -49,10 +51,10 @@ public class NivelPersonalizado : MonoBehaviour
     [Header("Player")]
     public Player player;
 
-    //Música
+    //Mï¿½sica
     public AudioSource audioSource;
 
-    [Header("Música")]
+    [Header("Mï¿½sica")]
     public AudioClip musicaMenuPrincipal;
     public AudioClip musicaNivel1;
     public AudioClip musicaNivel2;
@@ -62,12 +64,12 @@ public class NivelPersonalizado : MonoBehaviour
     //Eventos
     private bool ovActivado;
     private bool blActivado;
-    public SistemaEventosNivelPersonalizado sistemaEventos;
+    public SistemaEventosBase sistemaEventos;
     public SpriteRenderer panelOverdrive;
     public float multiplicadorOverdrive = 2f;
 
     private int ConfigEventos;
-    // Tiempo del próximo evento
+    // Tiempo del prï¿½ximo evento
     private float SiguienteEvento = 45f;
 
     //Generador
@@ -75,6 +77,7 @@ public class NivelPersonalizado : MonoBehaviour
 
     //Variables para Guardar Partida;
     private int nivelActual = 4;
+    private string nivelPers = "Personalizado";
     public GameObject panelContinuar;
     private bool juegoPausado = false;
 
@@ -108,6 +111,8 @@ public class NivelPersonalizado : MonoBehaviour
         //EstablecerConfiguracionEventos();
     }
 
+    private bool finalizacionIniciada = false;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -118,6 +123,11 @@ public class NivelPersonalizado : MonoBehaviour
         bool continuar =
             PlayerPrefs.GetInt("ContinuarPartida", 0) == 1 &&
             PlayerPrefs.GetInt("PartidaGuardada" + nivelActual, 0) == 1;
+
+        if (RankingOnline.Instancia != null)
+        {
+            RankingOnline.Instancia.PrepararRunIdV2(continuar, "Personalizado");
+        }
 
         //------------------------------------------
         // PARTIDA GUARDADA
@@ -257,7 +267,7 @@ public class NivelPersonalizado : MonoBehaviour
 
     public void PonerMusica(int indiceMusica)
     {
-        // Elige la canción según el valor que le mandó el nivel personalizado
+        // Elige la canciï¿½n segï¿½n el valor que le mandï¿½ el nivel personalizado
         switch (indiceMusica)
         {
             case 0:
@@ -285,7 +295,7 @@ public class NivelPersonalizado : MonoBehaviour
         PlayerPrefs.SetInt("PantallaGuardada", activado ? 1 : 0);
         PlayerPrefs.Save();
 
-        Debug.Log("Guardado en memoria. ¿Pantalla completa?: " + activado);
+        Debug.Log("Guardado en memoria. ï¿½Pantalla completa?: " + activado);
     }
 
     public void EstablecerConfiguracionEventos()
@@ -297,31 +307,31 @@ public class NivelPersonalizado : MonoBehaviour
         if (ovActivado && blActivado)
         {
             ConfigEventos = 3;
-            Debug.Log("Configuración: Ambos eventos activados");
+            Debug.Log("Configuraciï¿½n: Ambos eventos activados");
         }
         // 2. Solo Overdrive
         else if (ovActivado && !blActivado)
         {
             ConfigEventos = 1;
-            Debug.Log("Configuración: Solo Overdrive");
+            Debug.Log("Configuraciï¿½n: Solo Overdrive");
         }
         // 3. Solo Blackout
         else if (!ovActivado && blActivado)
         {
             ConfigEventos = 2;
-            Debug.Log("Configuración: Solo Blackout");
+            Debug.Log("Configuraciï¿½n: Solo Blackout");
         }
-        // 4. Ningún evento
+        // 4. Ningï¿½n evento
         else
         {
             ConfigEventos = 0;
-            Debug.Log("Configuración: Ningún evento");
+            Debug.Log("Configuraciï¿½n: Ningï¿½n evento");
         }
     }
 
     public void GenerarEvento()
     {
-        // Ningún evento
+        // Ningï¿½n evento
         if (ConfigEventos == 0)
         {
             Debug.Log("No hay eventos configurados.");
@@ -373,19 +383,19 @@ public class NivelPersonalizado : MonoBehaviour
         // Actualizar resumen
         MostrarResumenConfiguracion();
 
-        // Abrir menú de edición
+        // Abrir menï¿½ de ediciï¿½n
         MenuEditar.SetActive(true);
     }
 
     public void VolverAlNivelDesdeEditar()
     {
-        // Cerrar menú de edición
+        // Cerrar menï¿½ de ediciï¿½n
         MenuEditar.SetActive(false);
 
-        // Reabrir botón de menú
+        // Reabrir botï¿½n de menï¿½
         BotonMenu.SetActive(true);
 
-        // Reabrir botón editar
+        // Reabrir botï¿½n editar
         BotonEditar.SetActive(true);
 
         // Continuar juego
@@ -417,7 +427,7 @@ public class NivelPersonalizado : MonoBehaviour
         PlayerPrefs.SetInt("ModoEditarNivelPersonalizado", 1);
         PlayerPrefs.Save();
 
-        // Volver a la escena de configuración
+        // Volver a la escena de configuraciï¿½n
         SceneManager.LoadScene("CreacionNivelPersonalizado");
     }
 
@@ -432,57 +442,11 @@ public class NivelPersonalizado : MonoBehaviour
 
     public void TerminarPartida()
     {
-        // CERRAR MENU
+        if (finalizacionIniciada) return;
 
-        BotonMenu.SetActive(false);
-        Menupanel.SetActive(true);
-
-        // MANDAR DATOS AL RANKING
-
-        PlayerPrefs.SetString(
-            "UltimoNombre",
-            PlayerPrefs.GetString("NombreJugador"));
-
-        PlayerPrefs.SetFloat(
-            "UltimoTiempo",
-            tiempo);
-
-        PlayerPrefs.SetInt(
-            "UltimoNivel",
-            nivelActual);
-
-        PlayerPrefs.SetString(
-            "UltimoTipoNivel",
-            "Personalizado");
-
-        // ABRIR MENU DE NIVELES
-
-        PlayerPrefs.SetInt(
-            "AbrirMenuNiveles",
-            1);
-
-        // ELIMINAR PARTIDA GUARDADA
-
-        PlayerPrefs.DeleteKey(
-            "PartidaGuardada" + nivelActual);
-
-        PlayerPrefs.DeleteKey(
-            "TiempoGuardado" + nivelActual);
-
-        generadorDiscos.LimpiarDatosGuardado();
-
-        //------------------------------------------
-        // GUARDAR CAMBIOS
-        //------------------------------------------
-
-        PlayerPrefs.Save();
-
-
-        //------------------------------------------
-        // IR AL MENU
-        //------------------------------------------
-
-        SceneManager.LoadScene("MainMenu");
+        Menupanel.SetActive(false);
+        MenuEditar.SetActive(false);
+        GameOver();
     }
 
     // GUARDAR PARTIDA
@@ -528,6 +492,10 @@ public class NivelPersonalizado : MonoBehaviour
 
         PlayerPrefs.DeleteKey(
             "TiempoGuardado" + nivelActual);
+        if (RankingOnline.Instancia != null)
+        {
+            RankingOnline.Instancia.PrepararRunIdV2(false, "Personalizado");
+        }
 
         generadorDiscos.LimpiarDatosGuardado();
 
@@ -565,7 +533,7 @@ public class NivelPersonalizado : MonoBehaviour
 
         PlayerPrefs.Save();
 
-        // Ir a creación de nivel personalizado
+        // Ir a creaciï¿½n de nivel personalizado
         SceneManager.LoadScene("CreacionNivelPersonalizado");
     }
 
@@ -624,60 +592,53 @@ public class NivelPersonalizado : MonoBehaviour
     // GAME OVER
     //==========================================
 
-    public void GameOver()
+    public async void GameOver()
     {
+        if (finalizacionIniciada) return;
+        finalizacionIniciada = true;
+
         juegoPausado = true;
-
-
-        //--------------------------------------
-        // DETENER GENERADORES
-        //--------------------------------------
-
         generadorDiscos.DetenerGeneracion();
-
-
-        //--------------------------------------
-        // DETENER EVENTO
-        //--------------------------------------
-
         sistemaEventos.ReiniciarEvento();
-
-
-        //--------------------------------------
-        // PAUSAR PLAYER
-        //--------------------------------------
-
         player.PausarJugador();
-
-
-        //--------------------------------------
-        // CONGELAR JUEGO
-        //--------------------------------------
-
         Time.timeScale = 0f;
 
-
-        //--------------------------------------
-        // MOSTRAR PANEL
-        //--------------------------------------
-
+        string nombreJugador = PlayerPrefs.GetString("NombreJugador");
+        int tiempoFinal = Mathf.FloorToInt(tiempo);
+        PlayerPrefs.SetString("UltimoNombre", nombreJugador);
+        PlayerPrefs.SetFloat("UltimoTiempo", tiempo);
+        PlayerPrefs.SetInt("UltimoNivel", nivelActual);
+        PlayerPrefs.SetString("UltimoTipoNivel", "Personalizado");
+        PlayerPrefs.DeleteKey("PartidaGuardada" + nivelActual);
+        PlayerPrefs.DeleteKey("TiempoGuardado" + nivelActual);
+        generadorDiscos.LimpiarDatosGuardado();
+        PlayerPrefs.Save();
         panelGameOver.SetActive(true);
-
+        Menupanel.SetActive(false);
         BotonMenu.SetActive(false);
         BotonEditar.SetActive(false);
-
-
-        //--------------------------------------
-        // MOSTRAR ESTADISTICAS
-        //--------------------------------------
-
-        textoTiempoFinal.text =tiempoTexto.text;
-
+        textoTiempoFinal.text = tiempoTexto.text;
         textoNivelFinal.text = "Personalizado";
-
-        // MOSTRAR RESUMEN DE CONFIGURACIÓN
-
         MostrarResumenConfiguracion();
+
+        if (RankingOnline.Instancia == null)
+        {
+            Debug.LogWarning("Game Over -> RankingOnline no encontrado. Solo se guardo el resultado local.");
+            return;
+        }
+
+        Stopwatch cronometro = Stopwatch.StartNew();
+        bool registrado = await RankingOnline.Instancia.RegistrarPartida(
+            nombreJugador,
+            tiempoFinal,
+            nivelPers);
+        cronometro.Stop();
+
+        Debug.Log("Game Over -> Registro V2/V1 terminado en " + cronometro.ElapsedMilliseconds + " ms.");
+        if (!registrado)
+        {
+            Debug.LogWarning("Game Over -> No se pudo registrar la partida; el resultado local se conserva.");
+        }
     }
 
 
@@ -685,30 +646,8 @@ public class NivelPersonalizado : MonoBehaviour
 
     public void ReintentarNivel()
     {
-        //--------------------------------------
-        // ENVIAR RESULTADO AL RANKING
-        //--------------------------------------
+        if (!finalizacionIniciada) return;
 
-        PlayerPrefs.SetString(
-            "UltimoNombre",
-            PlayerPrefs.GetString(
-                "NombreJugador"));
-
-
-        PlayerPrefs.SetFloat(
-            "UltimoTiempo",
-            tiempo);
-
-
-        PlayerPrefs.SetInt(
-            "UltimoNivel",
-            nivelActual);
-
-        PlayerPrefs.SetString(
-            "UltimoTipoNivel",
-            "Personalizado");
-
-        //--------------------------------------
         // ELIMINAR PARTIDA GUARDADA
         //--------------------------------------
 
@@ -742,30 +681,8 @@ public class NivelPersonalizado : MonoBehaviour
 
     public void VolverMenuGameOver()
     {
-        //--------------------------------------
-        // ENVIAR RESULTADO AL RANKING
-        //--------------------------------------
+        if (!finalizacionIniciada) return;
 
-        PlayerPrefs.SetString(
-            "UltimoNombre",
-            PlayerPrefs.GetString(
-                "NombreJugador"));
-
-
-        PlayerPrefs.SetFloat(
-            "UltimoTiempo",
-            tiempo);
-
-
-        PlayerPrefs.SetInt(
-            "UltimoNivel",
-            nivelActual);
-
-        PlayerPrefs.SetString(
-            "UltimoTipoNivel",
-            "Personalizado");
-
-        //--------------------------------------
         // ELIMINAR PARTIDA GUARDADA
         //--------------------------------------
 
@@ -811,7 +728,7 @@ public class NivelPersonalizado : MonoBehaviour
     }
 
     //==========================================
-    // RESUMEN DE CONFIGURACIÓN
+    // RESUMEN DE CONFIGURACIï¿½N
     //==========================================
 
     public void MostrarResumenConfiguracion()
@@ -826,7 +743,7 @@ public class NivelPersonalizado : MonoBehaviour
             discos += "Normal, ";
 
         if (PlayerPrefs.GetInt("Disco2", 0) == 1)
-            discos += "Rápido, ";
+            discos += "Rï¿½pido, ";
 
         if (PlayerPrefs.GetInt("Disco3", 0) == 1)
             discos += "Pesado, ";
@@ -837,13 +754,13 @@ public class NivelPersonalizado : MonoBehaviour
         if (PlayerPrefs.GetInt("Disco5", 0) == 1)
             discos += "Explosivo, ";
 
-        // Quitar última coma
+        // Quitar ï¿½ltima coma
         if (discos.EndsWith(", "))
             discos = discos.Substring(0, discos.Length - 2);
 
 
         //========================================
-        // MÚSICA
+        // Mï¿½SICA
         //========================================
 
         string musica = "";
@@ -854,7 +771,7 @@ public class NivelPersonalizado : MonoBehaviour
         switch (musicaElegida)
         {
             case 0:
-                musica = "Menú Principal";
+                musica = "Menï¿½ Principal";
                 break;
 
             case 1:
@@ -927,7 +844,7 @@ public class NivelPersonalizado : MonoBehaviour
         if (PlayerPrefs.GetInt("GenDerAba", 0) == 1)
             generadores += "Derecha Abajo, ";
 
-        // Quitar última coma
+        // Quitar ï¿½ltima coma
         if (generadores.EndsWith(", "))
             generadores =
                 generadores.Substring(
@@ -937,7 +854,7 @@ public class NivelPersonalizado : MonoBehaviour
 
 
         //========================================
-        // ACTUALIZAR RESUMEN DEL MENÚ
+        // ACTUALIZAR RESUMEN DEL MENï¿½
         //========================================
 
         if (textoResumenDiscosMenu != null)
@@ -949,7 +866,7 @@ public class NivelPersonalizado : MonoBehaviour
         if (textoResumenMusicaMenu != null)
         {
             textoResumenMusicaMenu.text =
-                "Música: " + musica;
+                "Musica: " + musica;
         }
 
         if (textoResumenEventosMenu != null)
@@ -978,7 +895,7 @@ public class NivelPersonalizado : MonoBehaviour
         if (textoResumenMusicaGameOver != null)
         {
             textoResumenMusicaGameOver.text =
-                "Música: " + musica;
+                "Musica: " + musica;
         }
 
         if (textoResumenEventosGameOver != null)

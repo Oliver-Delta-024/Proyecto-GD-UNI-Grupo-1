@@ -26,6 +26,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/NivelPersonalizado.unity
     guid: 12afb3d4bb30ee9499087f04952f8f09
+  - enabled: 1
+    path: Assets/Scenes/RankingMundial.unity
+    guid: b8aca000b6ce1cf4aaf760a0275c3280
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_UseUCBPForAssetBundles: 0
