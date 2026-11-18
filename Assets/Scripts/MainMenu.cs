@@ -12,6 +12,7 @@ public class MainMenu : MonoBehaviour
     public GameObject mainMenu;
     public GameObject rankingmenu;
     public GameObject Menuniveles;
+    public GameObject MenuInstrucciones;
 
     //Variables de Opciones
     public Slider soundSlider;
@@ -437,11 +438,26 @@ public class MainMenu : MonoBehaviour
         }
     }
 
-    //
+    //Botones Ranking Online
 
     public void BotónRankingOnline()
     {
         SceneManager.LoadScene("RankingMundial");
+    }
+
+
+    //Botones Menu Instrucciones
+
+    public void BotonAbrirInstrucciones()
+    {
+        mainMenu.SetActive(false);
+        MenuInstrucciones.SetActive(true);
+    }
+
+    public void BotonVolverMenuInstrucciones()
+    {
+        mainMenu.SetActive(true);
+        MenuInstrucciones.SetActive(false);
     }
 
 }
