@@ -65,6 +65,9 @@ public abstract class NivelBase : MonoBehaviour
     //Metodo para Contar el Tiempo
     protected virtual void Start() 
     {
+        if (secuenciaMensajes != null)
+            secuenciaMensajes.ConfigurarPrefijoRutaZero(PrefijoGuardadoDiscos);
+
         bool continuar =
         PlayerPrefs.GetInt("ContinuarPartida", 0) == 1 &&
         PlayerPrefs.GetInt("PartidaGuardada" + NivelActual, 0) == 1;

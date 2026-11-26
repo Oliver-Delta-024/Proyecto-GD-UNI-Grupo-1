@@ -4,7 +4,8 @@ using TMPro;
 
 public class SecuenciaMensaje : MonoBehaviour
 {
-    private const string ClaveRutaZero = "PartidaRutaZero";
+    private const string ClaveRutaZeroAnterior = "PartidaRutaZero";
+    private string claveRutaZero = ClaveRutaZeroAnterior;
 
     [SerializeField] private TMP_Text textoMensaje;
     [SerializeField] private GameObject[] botonesOcultosAlInicio;
@@ -56,10 +57,22 @@ public class SecuenciaMensaje : MonoBehaviour
 
     private void Awake()
     {
-        rutaZero = PlayerPrefs.GetInt(ClaveRutaZero, 0) == 1;
+        rutaZero = PlayerPrefs.GetInt(claveRutaZero, 0) == 1;
 
         if (textoMensaje != null)
             textoMensaje.gameObject.SetActive(false);
+    }
+
+    public void ConfigurarPrefijoRutaZero(string prefijoNivel)
+    {
+        claveRutaZero = string.IsNullOrEmpty(prefijoNivel)
+            ? ClaveRutaZeroAnterior
+            : prefijoNivel + "RutaZero";
+
+        int valorGuardado = PlayerPrefs.HasKey(claveRutaZero)
+            ? PlayerPrefs.GetInt(claveRutaZero, 0)
+            : PlayerPrefs.GetInt(ClaveRutaZeroAnterior, 0);
+        rutaZero = valorGuardado == 1;
     }
 
     public void IniciarIntroduccion()
@@ -72,7 +85,7 @@ public class SecuenciaMensaje : MonoBehaviour
         int tirada = Random.Range(0, 100);
         rutaZero = tirada == 0;
 
-        PlayerPrefs.SetInt(ClaveRutaZero, rutaZero ? 1 : 0);
+        PlayerPrefs.SetInt(claveRutaZero, rutaZero ? 1 : 0);
         PlayerPrefs.Save();
 
         foreach (GameObject boton in botonesOcultosAlInicio)
@@ -132,7 +145,7 @@ public class SecuenciaMensaje : MonoBehaviour
 
     public void GuardarRutaZero()
     {
-        PlayerPrefs.SetInt(ClaveRutaZero, rutaZero ? 1 : 0);
+        PlayerPrefs.SetInt(claveRutaZero, rutaZero ? 1 : 0);
         PlayerPrefs.Save();
     }
 
