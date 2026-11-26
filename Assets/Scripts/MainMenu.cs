@@ -460,4 +460,11 @@ public class MainMenu : MonoBehaviour
         MenuInstrucciones.SetActive(false);
     }
 
+    //Botones Perso Player
+
+    public void BotónPersoPlayer()
+    {
+        SceneManager.LoadScene("CustomPlayer");
+    }
+
 }
