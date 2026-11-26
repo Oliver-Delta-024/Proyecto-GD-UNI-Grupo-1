@@ -388,11 +388,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PersonalizacionAccesoriosJugador
   spritesCaras:
-  - {fileID: 3835781340667156529, guid: 082a1d6ac68206a45b4ee568a8105c97, type: 3}
+  - {fileID: -4296760176796813495, guid: f2f249a6cff952843ad7329e36df6373, type: 3}
   - {fileID: 7006992816946266390, guid: 8dd4010bbc913ae469e9277b2f4e285c, type: 3}
   - {fileID: -3863129827144907964, guid: 6b216ecba53ed4645885104efc6db7f2, type: 3}
+  - {fileID: 9143868440440847147, guid: 927fd3cdabd1bd5468b3dc14692daba2, type: 3}
   - {fileID: 3368979912765720805, guid: e9158e65b1a2eb84f82d0cf15ac35b41, type: 3}
-  - {fileID: 1532440346177022758, guid: 74db4064d0114b9438e3bc690018b54e, type: 3}
   - {fileID: 5251744956290624300, guid: 50a13090b74ffcf41ab6e46a516b6662, type: 3}
   spritesSombreros:
   - {fileID: 3835781340667156529, guid: 082a1d6ac68206a45b4ee568a8105c97, type: 3}
