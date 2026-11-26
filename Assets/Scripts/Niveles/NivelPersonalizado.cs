@@ -94,6 +94,8 @@ public class NivelPersonalizado : MonoBehaviour
         player.ConfigurarGuardado(nivelActual);
         player.InicializarJugador();
         EstablecerConfiguracionEventos();
+        if (secuenciaMensajes != null)
+            secuenciaMensajes.IniciarIntroduccion();
         generadorDiscos.IniciarGeneracion();
     }
 
@@ -112,6 +114,8 @@ public class NivelPersonalizado : MonoBehaviour
     }
 
     private bool finalizacionIniciada = false;
+
+    [SerializeField] private SecuenciaMensaje secuenciaMensajes;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -423,6 +427,9 @@ public class NivelPersonalizado : MonoBehaviour
         player.GuardarJugador();
         sistemaEventos.GuardarEstadoEvento();
 
+        if (secuenciaMensajes != null)
+            secuenciaMensajes.GuardarRutaZero();
+
         // Avisar que vamos a editar
         PlayerPrefs.SetInt("ModoEditarNivelPersonalizado", 1);
         PlayerPrefs.Save();
@@ -470,6 +477,9 @@ public class NivelPersonalizado : MonoBehaviour
         // GUARDAR EVENTO
 
         sistemaEventos.GuardarEstadoEvento();
+
+        if (secuenciaMensajes != null)
+            secuenciaMensajes.GuardarRutaZero();
 
         // ABRIR MENU DE NIVELES
 
@@ -620,6 +630,9 @@ public class NivelPersonalizado : MonoBehaviour
         textoTiempoFinal.text = tiempoTexto.text;
         textoNivelFinal.text = "Personalizado";
         MostrarResumenConfiguracion();
+
+        if (secuenciaMensajes != null)
+            secuenciaMensajes.MostrarMensajeFinal(tiempo);
 
         if (RankingOnline.Instancia == null)
         {
