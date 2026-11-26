@@ -60,9 +60,14 @@ public abstract class NivelBase : MonoBehaviour
 
     private bool finalizacionIniciada = false;
 
+    [SerializeField] private SecuenciaMensaje secuenciaMensajes;
+
     //Metodo para Contar el Tiempo
     protected virtual void Start() 
     {
+        if (secuenciaMensajes != null)
+            secuenciaMensajes.ConfigurarPrefijoRutaZero(PrefijoGuardadoDiscos);
+
         bool continuar =
         PlayerPrefs.GetInt("ContinuarPartida", 0) == 1 &&
         PlayerPrefs.GetInt("PartidaGuardada" + NivelActual, 0) == 1;
@@ -98,6 +103,8 @@ public abstract class NivelBase : MonoBehaviour
             panelContinuar.SetActive(false);
             player.ConfigurarGuardado(NivelActual);
             player.InicializarJugador();
+            if (secuenciaMensajes != null)
+                secuenciaMensajes.IniciarIntroduccion();
             // Partida nueva: comenzar a generar discos
             generadorDiscos.IniciarGeneracion();
         }
@@ -243,6 +250,9 @@ public abstract class NivelBase : MonoBehaviour
         player.GuardarJugador();
         sistemaEventos.GuardarEstadoEvento();
 
+        if (secuenciaMensajes != null)
+            secuenciaMensajes.GuardarRutaZero();
+
         // Regresar al men� de niveles
         PlayerPrefs.SetInt("AbrirMenuNiveles", 1);
 
@@ -284,6 +294,9 @@ public abstract class NivelBase : MonoBehaviour
         player.ReanudarJugador();
         generadorDiscos.IniciarGeneracion();
         BotonMenu.SetActive(true);
+
+        if (secuenciaMensajes != null)
+            secuenciaMensajes.IniciarIntroduccion();
     }
 
     public void SeguirPartida()
@@ -344,6 +357,8 @@ public abstract class NivelBase : MonoBehaviour
         BotonMenu.SetActive(false);
         textoTiempoFinal.text = tiempoTexto.text;
         textoNivelFinal.text = NivelActual.ToString();
+        if (secuenciaMensajes != null)
+            secuenciaMensajes.MostrarMensajeFinal(tiempo);
         if (RankingOnline.Instancia == null)
         {
             Debug.LogWarning("Game Over -> RankingOnline no encontrado. Solo se guardo el resultado local.");
