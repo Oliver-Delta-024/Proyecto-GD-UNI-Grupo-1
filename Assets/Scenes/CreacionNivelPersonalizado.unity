@@ -2252,7 +2252,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 0, y: -0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0.5}
 --- !u!114 &522666241
@@ -4348,7 +4348,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 0, y: -0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0.5}
 --- !u!114 &1014962645
@@ -8849,10 +8849,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ConfiguradorNivelPersonalizado
   disco1: {fileID: 1014962645}
-  disco2: {fileID: 0}
-  disco3: {fileID: 0}
-  disco4: {fileID: 0}
-  disco5: {fileID: 0}
+  disco2: {fileID: 522666242}
+  disco3: {fileID: 1593101193}
+  disco4: {fileID: 760541689}
+  disco5: {fileID: 941626198}
   selectorMusica: {fileID: 1214250547}
   mensajeError: {fileID: 956494808}
   textoMensajeError: {fileID: 1279375829}

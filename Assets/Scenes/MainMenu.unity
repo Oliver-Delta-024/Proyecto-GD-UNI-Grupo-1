@@ -8972,11 +8972,11 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2129279740}
+  - {fileID: 891682373}
   - {fileID: 413661794}
   - {fileID: 1418534881}
   - {fileID: 1794670698}
   - {fileID: 1533043712}
-  - {fileID: 891682373}
   m_Father: {fileID: 423333871}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
