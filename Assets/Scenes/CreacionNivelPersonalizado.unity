@@ -5255,10 +5255,10 @@ LineRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Positions:
-  - {x: -6, y: 3.5, z: 0}
-  - {x: 6, y: 3.5, z: 1}
-  - {x: 6, y: -3.5, z: 1}
-  - {x: -6, y: -3.5, z: 1}
+  - {x: -6, y: 3.2, z: 0}
+  - {x: 6, y: 3.2, z: 1}
+  - {x: 6, y: -3.8, z: 1}
+  - {x: -6, y: -3.8, z: 1}
   m_Parameters:
     serializedVersion: 3
     widthMultiplier: 0.1
